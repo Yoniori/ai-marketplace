@@ -1,0 +1,121 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* ── Neutrals — pure gray, no blue tint ── */
+    --background:         0 0% 100%;
+    --foreground:         0 0% 6%;
+
+    --card:               0 0% 100%;
+    --card-foreground:    0 0% 6%;
+
+    --popover:            0 0% 100%;
+    --popover-foreground: 0 0% 6%;
+
+    /* ── Primary — violet, reserved for CTAs and active states ── */
+    --primary:            256 56% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    /* ── Surfaces ── */
+    --secondary:            0 0% 96%;
+    --secondary-foreground: 0 0% 15%;
+
+    --muted:            0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+
+    --accent:            0 0% 94%;
+    --accent-foreground: 0 0% 10%;
+
+    /* ── Semantic ── */
+    --destructive:            0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* ── Structural ── */
+    --border: 0 0% 89%;
+    --input:  0 0% 89%;
+    --ring:   256 56% 50%;
+
+    /* ── Shape ── */
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background:         0 0% 5%;
+    --foreground:         0 0% 95%;
+
+    --card:               0 0% 8%;
+    --card-foreground:    0 0% 95%;
+
+    --popover:            0 0% 8%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary:            256 60% 64%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary:            0 0% 13%;
+    --secondary-foreground: 0 0% 88%;
+
+    --muted:            0 0% 13%;
+    --muted-foreground: 0 0% 55%;
+
+    --accent:            0 0% 15%;
+    --accent-foreground: 0 0% 95%;
+
+    --destructive:            0 60% 42%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 15%;
+    --input:  0 0% 15%;
+    --ring:   256 60% 64%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply tracking-tight;
+  }
+}
+
+@layer components {
+  /* ── Buttons ─────────────────────────────────────────────────────────── */
+  .btn-primary {
+    @apply inline-flex h-10 items-center justify-center gap-1.5 rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-outline {
+    @apply inline-flex h-10 items-center justify-center gap-1.5 rounded-md border border-border px-5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-ghost {
+    @apply inline-flex h-10 items-center justify-center gap-1.5 rounded-md px-4 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
+  }
+
+  /* ── Cards ───────────────────────────────────────────────────────────── */
+  .card {
+    @apply rounded-xl border border-border bg-card;
+  }
+
+  /* ── Overline label ──────────────────────────────────────────────────── */
+  .overline {
+    @apply text-xs font-medium tracking-widest uppercase text-muted-foreground;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

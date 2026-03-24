@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wc -l /Users/yonatanori/ai-marketplace/supabase/migrations/*.sql /Users/yonatanori/ai-marketplace/supabase/seed.sql)",
+      "Bash(node -e \"const p = require\\(''/Users/yonatanori/ai-marketplace/package.json''\\); console.log\\(''react:'', p.dependencies.react, ''next:'', p.dependencies.next\\)\")",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(find /Users/yonatanori/ai-marketplace -not -path */node_modules/* -not -path */.next/* -type f -name *.ts -o -name *.tsx -o -name *.json -o -name *.css -o -name *.md)",
+      "Bash(npx tsc:*)",
+      "Bash(ls /Users/yonatanori/ai-marketplace/app/profile/[username]/)",
+      "Bash(find /Users/yonatanori/ai-marketplace/app -name *.env* -o -name .env*)",
+      "Bash(ls -la /Users/yonatanori/ai-marketplace/.env*)",
+      "Bash(npx supabase:*)",
+      "Bash(node -e \"console.log\\(require\\(''crypto''\\).randomBytes\\(32\\).toString\\(''hex''\\)\\)\")",
+      "Bash(grep -E \"^tailwindcss$|^postcss$|^autoprefixer$|^tailwindcss-animate$\")",
+      "Bash(grep -rn STORAGE_KEYs*= node_modules/@supabase/auth-js/dist/main/constants.js)",
+      "Bash(grep -rn STORAGE_KEYs*= node_modules/@supabase/auth-js/dist/)"
+    ]
+  }
+}

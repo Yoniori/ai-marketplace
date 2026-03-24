@@ -1,0 +1,2 @@
+# Migration files will be added in Step 2 (Database Setup).
+# Run: npm run db:push after adding migrations.
