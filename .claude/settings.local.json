@@ -17,7 +17,13 @@
       "Bash(npm install:*)",
       "Bash(node -e \"require\\(''@anthropic-ai/sdk''\\); console.log\\(''ok''\\)\")",
       "Bash(node -e \"require\\(''jszip''\\); console.log\\(''ok''\\)\")",
-      "Bash(xargs kill:*)"
+      "Bash(xargs kill:*)",
+      "Bash(git reflog:*)",
+      "Bash(git gc:*)",
+      "Bash(git commit:*)",
+      "Bash(git remote:*)",
+      "Bash(ls -la .env*)",
+      "Bash(node -e \"const pkg = require\\(''./node_modules/@supabase/postgrest-js/package.json''\\); console.log\\(pkg.version\\)\")"
     ]
   }
 }

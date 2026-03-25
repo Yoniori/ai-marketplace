@@ -4,6 +4,15 @@ import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { formatDate } from "@/lib/utils";
 
+// Explicit type to work around postgrest-js v2 column inference returning never
+type ProfileRow = {
+  username: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  role: string;
+  created_at: string;
+};
+
 /**
  * /dashboard — Authenticated home page.
  * Dark, premium — matches the homepage visual system.
@@ -17,11 +26,11 @@ export default async function DashboardPage() {
 
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
+  const { data: profile } = (await supabase
     .from("profiles")
     .select("*")
     .eq("id", user.id)
-    .single();
+    .single()) as unknown as { data: ProfileRow | null; error: unknown };
 
   if (!profile) redirect("/");
 

@@ -2,6 +2,14 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { UserMenu } from "@/components/layout/UserMenu";
 
+// Explicit type to work around postgrest-js v2 column inference returning never
+type ProfileRow = {
+  username: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  role: string;
+};
+
 /**
  * Navbar — Server Component.
  * Taller rail (h-16) with gradient-fill pill CTA for premium feel.
@@ -11,13 +19,12 @@ export async function Navbar() {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  const profile = user
-    ? await supabase
+  const profile: ProfileRow | null = user
+    ? ((await supabase
         .from("profiles")
         .select("username, display_name, avatar_url, role")
         .eq("id", user.id)
-        .single()
-        .then(({ data }) => data)
+        .single()) as unknown as { data: ProfileRow | null; error: unknown }).data
     : null;
 
   return (

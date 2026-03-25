@@ -11,6 +11,14 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { UserMenu } from "@/components/layout/UserMenu";
 
+// Explicit type to work around postgrest-js v2 column inference returning never
+type ProfileRow = {
+  username: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  role: string;
+};
+
 const NAV_ITEMS = [
   { href: "/dashboard",           icon: LayoutDashboard, label: "Overview"                    },
   { href: "/dashboard/listings",  icon: Package,         label: "Listings",  creatorOnly: true },
@@ -39,11 +47,11 @@ export default async function DashboardLayout({
     redirect("/login?redirectTo=/dashboard");
   }
 
-  const { data: profile } = await supabase
+  const { data: profile } = (await supabase
     .from("profiles")
     .select("username, display_name, avatar_url, role")
     .eq("id", user.id)
-    .single();
+    .single()) as unknown as { data: ProfileRow | null; error: unknown };
 
   if (!profile) {
     redirect("/");

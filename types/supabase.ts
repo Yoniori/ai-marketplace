@@ -70,6 +70,170 @@ export type Database = {
         }
         Relationships: []
       }
+      github_connections: {
+        Row: {
+          connected_at: string
+          encrypted_access_token: string
+          github_user_id: number
+          github_username: string
+          id: string
+          token_auth_tag: string
+          token_iv: string
+          token_scope: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          connected_at?: string
+          encrypted_access_token: string
+          github_user_id: number
+          github_username: string
+          id?: string
+          token_auth_tag: string
+          token_iv: string
+          token_scope: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          connected_at?: string
+          encrypted_access_token?: string
+          github_user_id?: number
+          github_username?: string
+          id?: string
+          token_auth_tag?: string
+          token_iv?: string
+          token_scope?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "github_connections_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      github_imported_repos: {
+        Row: {
+          github_repo_full_name: string
+          github_repo_id: number
+          id: string
+          imported_at: string
+          listing_id: string | null
+          user_id: string
+        }
+        Insert: {
+          github_repo_full_name: string
+          github_repo_id: number
+          id?: string
+          imported_at?: string
+          listing_id?: string | null
+          user_id: string
+        }
+        Update: {
+          github_repo_full_name?: string
+          github_repo_id?: number
+          id?: string
+          imported_at?: string
+          listing_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "github_imported_repos_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "github_imported_repos_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      listing_checks: {
+        Row: {
+          attempt_count: number
+          clarity_score: number | null
+          completed_at: string | null
+          completeness_score: number | null
+          duration_ms: number | null
+          error_message: string | null
+          files_analyzed: string[] | null
+          id: string
+          listing_id: string
+          model_used: string | null
+          outcome: string | null
+          overall_score: number | null
+          report: Json | null
+          security_score: number | null
+          status: string
+          triggered_at: string
+          triggered_by: string
+        }
+        Insert: {
+          attempt_count?: number
+          clarity_score?: number | null
+          completed_at?: string | null
+          completeness_score?: number | null
+          duration_ms?: number | null
+          error_message?: string | null
+          files_analyzed?: string[] | null
+          id?: string
+          listing_id: string
+          model_used?: string | null
+          outcome?: string | null
+          overall_score?: number | null
+          report?: Json | null
+          security_score?: number | null
+          status?: string
+          triggered_at?: string
+          triggered_by: string
+        }
+        Update: {
+          attempt_count?: number
+          clarity_score?: number | null
+          completed_at?: string | null
+          completeness_score?: number | null
+          duration_ms?: number | null
+          error_message?: string | null
+          files_analyzed?: string[] | null
+          id?: string
+          listing_id?: string
+          model_used?: string | null
+          outcome?: string | null
+          overall_score?: number | null
+          report?: Json | null
+          security_score?: number | null
+          status?: string
+          triggered_at?: string
+          triggered_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_checks_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_checks_triggered_by_fkey"
+            columns: ["triggered_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       listing_tags: {
         Row: {
           listing_id: string
@@ -110,6 +274,7 @@ export type Database = {
           demo_url: string | null
           description: string
           featured_until: string | null
+          files_path: string | null
           gallery_urls: string[]
           id: string
           is_featured: boolean
@@ -119,6 +284,7 @@ export type Database = {
           published_at: string | null
           purchase_count: number
           review_count: number
+          review_status: string | null
           slug: string
           status: Database["public"]["Enums"]["listing_status"]
           tagline: string
@@ -135,6 +301,7 @@ export type Database = {
           demo_url?: string | null
           description: string
           featured_until?: string | null
+          files_path?: string | null
           gallery_urls?: string[]
           id?: string
           is_featured?: boolean
@@ -144,6 +311,7 @@ export type Database = {
           published_at?: string | null
           purchase_count?: number
           review_count?: number
+          review_status?: string | null
           slug: string
           status?: Database["public"]["Enums"]["listing_status"]
           tagline: string
@@ -160,6 +328,7 @@ export type Database = {
           demo_url?: string | null
           description?: string
           featured_until?: string | null
+          files_path?: string | null
           gallery_urls?: string[]
           id?: string
           is_featured?: boolean
@@ -169,6 +338,7 @@ export type Database = {
           published_at?: string | null
           purchase_count?: number
           review_count?: number
+          review_status?: string | null
           slug?: string
           status?: Database["public"]["Enums"]["listing_status"]
           tagline?: string
