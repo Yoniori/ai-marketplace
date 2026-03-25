@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 import { signInWithEmail } from "@/app/actions/auth";
 import { OAuthButton } from "@/components/auth/OAuthButton";
+import { GitHubLoginButton } from "@/components/auth/GitHubLoginButton";
 
 interface LoginFormProps {
   defaultEmail?: string;
@@ -53,8 +54,11 @@ export function LoginForm({ defaultEmail, redirectTo, urlError }: LoginFormProps
 
         <div className="px-8 py-7 space-y-5">
 
-          {/* Google OAuth */}
-          <OAuthButton next={redirectTo ?? "/dashboard"} />
+          {/* OAuth providers */}
+          <div className="space-y-2">
+            <OAuthButton next={redirectTo ?? "/dashboard"} />
+            <GitHubLoginButton next={redirectTo ?? "/dashboard"} />
+          </div>
 
           {/* Divider */}
           <div className="flex items-center gap-3">
