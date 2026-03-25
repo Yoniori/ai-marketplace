@@ -4,12 +4,6 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Loader2 } from "lucide-react";
 
-// ─── DIAGNOSTIC LOGGING — remove after PKCE issue is resolved ────────────────
-// This version uses skipBrowserRedirect:true so we can inspect document.cookie
-// BEFORE the browser navigates away to Google. Once working, restore the
-// original (remove skipBrowserRedirect and the console blocks).
-// ─────────────────────────────────────────────────────────────────────────────
-
 function GoogleIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-4 w-4 shrink-0" aria-hidden="true">
@@ -33,72 +27,26 @@ export function OAuthButton({ next = "/dashboard" }: OAuthButtonProps) {
     setLoading(true);
     setError(null);
 
-    // ── [DIAG 1] Environment ──────────────────────────────────────────────
-    console.log("[OAuth:diag] origin       :", window.location.origin);
-    console.log("[OAuth:diag] next         :", next);
-
     const supabase = createClient();
 
-    // ── [DIAG 2] Client type ──────────────────────────────────────────────
-    // Should print "GoTrueClient" — confirms createBrowserClient was used
-    console.log("[OAuth:diag] auth client  :", (supabase as any).auth?.constructor?.name ?? "unknown");
+    // Use the explicit app URL env var so production always redirects to the
+    // correct domain. Falls back to window.location.origin for local dev
+    // when NEXT_PUBLIC_APP_URL is not set.
+    const baseUrl  = process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin;
+    const callback = `${baseUrl}/auth/callback?next=${encodeURIComponent(next)}`;
 
-    const callback = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
-    console.log("[OAuth:diag] redirectTo   :", callback);
-
-    // ── [DIAG 3] Cookies BEFORE signInWithOAuth ───────────────────────────
-    const cookiesBefore = document.cookie;
-    console.log("[OAuth:diag] cookies before signInWithOAuth:",
-      cookiesBefore || "(none)"
-    );
-
-    // Use skipBrowserRedirect so we don't navigate before logging
-    const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
         redirectTo: callback,
         queryParams: { access_type: "offline", prompt: "consent" },
-        skipBrowserRedirect: true,  // ← pause navigation for inspection
       },
     });
 
-    // ── [DIAG 4] Cookies AFTER signInWithOAuth (verifier must be here) ────
-    const cookiesAfter = document.cookie;
-    console.log("[OAuth:diag] cookies after signInWithOAuth:",
-      cookiesAfter || "(none)"
-    );
-
-    const pkceKey   = "code-verifier";
-    const hasPkce   = cookiesAfter.includes(pkceKey);
-    const allNames  = cookiesAfter
-      .split(";")
-      .map((c) => c.trim().split("=")[0])
-      .filter(Boolean);
-
-    console.log("[OAuth:diag] cookie names :", allNames);
-    console.log("[OAuth:diag] PKCE verifier cookie present:", hasPkce);
-
-    if (!hasPkce) {
-      console.error(
-        "[OAuth:diag] ⚠️  PKCE verifier was NOT written to document.cookie.",
-        "Expected a cookie name containing 'code-verifier'.",
-        "This is the root cause of the PKCE error."
-      );
-    }
-
-    // ── [DIAG 5] OAuth redirect URL ───────────────────────────────────────
-    console.log("[OAuth:diag] redirect URL :", data?.url ?? "(none — error above)");
-
     if (oauthError) {
-      console.error("[OAuth:diag] signInWithOAuth error:", oauthError.message);
+      console.error("[OAuth] signInWithOAuth error:", oauthError.message);
       setError("Google sign-in failed. Please try again.");
       setLoading(false);
-      return;
-    }
-
-    // ── Proceed with the redirect manually ───────────────────────────────
-    if (data?.url) {
-      window.location.href = data.url;
     }
   }
 
