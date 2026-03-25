@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
+import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { supabaseUrl, supabaseAnonKey } from "@/lib/supabase/env";
 
 /**
@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
         // code verifier cookie lives, untouched by middleware.
         return request.cookies.getAll();
       },
-      setAll(cookiesToSet) {
+      setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
         // Write session cookies directly onto the response the browser
         // receives — guarantees Set-Cookie headers are forwarded.
         cookiesToSet.forEach(({ name, value, options }) => {
