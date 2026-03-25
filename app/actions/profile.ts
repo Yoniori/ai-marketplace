@@ -116,8 +116,17 @@ export async function promoteToCreator(): Promise<ProfileResult> {
     return { success: false, error: "Only buyer accounts can be upgraded." };
   }
 
-  // Use admin client to bypass RLS on the role column
-  const admin = await createAdminClient();
+  // Use admin client to bypass RLS on the role column.
+  // createAdminClient() throws if SUPABASE_SERVICE_ROLE_KEY is absent —
+  // catch it so the action returns a readable error instead of crashing.
+  let admin: Awaited<ReturnType<typeof createAdminClient>>;
+  try {
+    admin = await createAdminClient();
+  } catch (err) {
+    console.error("[promoteToCreator] admin client unavailable:", err);
+    return { success: false, error: "Upgrade temporarily unavailable. Please try again later." };
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (admin as any)
     .from("profiles")

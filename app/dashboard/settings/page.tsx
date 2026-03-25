@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
-import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { ProfileForm } from "@/components/profile/ProfileForm";
 import { GitHubSection } from "@/components/github/GitHubSection";
 import type { Tables } from "@/types/supabase";
@@ -44,8 +44,11 @@ export default async function SettingsPage({
   if (!profile) redirect("/");
 
   // ── GitHub connection status (server-read, no client fetch needed) ─
-  const admin = await createAdminClient();
-  const { data: ghConn } = await (admin as any)
+  // Use the regular session client — the user is reading their own row,
+  // which is covered by the standard RLS policy on github_connections.
+  // createAdminClient() must NOT be called here because it throws at render
+  // time if SUPABASE_SERVICE_ROLE_KEY is absent, crashing the whole page.
+  const { data: ghConn } = await (supabase as any)
     .from("github_connections")
     .select("github_username")
     .eq("user_id", user.id)
