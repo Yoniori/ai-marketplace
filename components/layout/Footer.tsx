@@ -22,34 +22,54 @@ const LEGAL_LINKS = [
 
 export function Footer() {
   return (
-    <footer className="border-t border-white/[0.06] bg-[#050505]">
-      <div className="container py-14 md:py-16">
+    <footer className="relative" style={{ background: "#050505" }}>
+
+      {/* Gradient top border — centered violet bloom */}
+      <div
+        aria-hidden
+        className="absolute inset-x-0 top-0 h-px"
+        style={{
+          background:
+            "linear-gradient(90deg, transparent 0%, hsl(256 60% 52% / 0.40) 28%, hsl(256 60% 52% / 0.40) 72%, transparent 100%)",
+        }}
+      />
+
+      <div className="container py-14 md:py-18">
 
         {/* Main grid */}
         <div className="grid grid-cols-2 gap-10 md:grid-cols-4">
 
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="inline-flex items-center gap-1.5 text-sm font-semibold text-white/75">
-              <span className="font-mono text-xs font-bold text-primary select-none leading-none">▸</span>
+            <Link href="/" className="inline-flex items-center gap-2.5 text-sm font-semibold text-white/75">
+              <span
+                className="inline-flex h-5 w-5 items-center justify-center rounded border font-mono text-[10px] font-bold leading-none select-none"
+                style={{
+                  borderColor: "hsl(256 60% 52% / 0.32)",
+                  background: "hsl(256 60% 52% / 0.08)",
+                  color: "hsl(256 80% 70%)",
+                }}
+              >
+                ▸
+              </span>
               Vibe Code Market
             </Link>
-            <p className="mt-4 max-w-[180px] text-xs leading-relaxed text-white/25">
+            <p className="mt-4 max-w-[180px] text-xs leading-relaxed text-white/30">
               Apps, tools, and automations built with AI coding tools.
             </p>
           </div>
 
           {/* Built with */}
           <div>
-            <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.16em] text-white/20">
+            <p className="mb-5 font-mono text-[10px] uppercase tracking-[0.18em] text-white/40">
               Built with
             </p>
-            <ul className="space-y-3">
+            <ul className="space-y-3.5">
               {TOOL_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-xs text-white/30 transition-colors hover:text-white/55"
+                    className="text-xs text-white/40 transition-colors hover:text-white/70"
                   >
                     {link.label}
                   </Link>
@@ -60,15 +80,15 @@ export function Footer() {
 
           {/* Marketplace */}
           <div>
-            <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.16em] text-white/20">
+            <p className="mb-5 font-mono text-[10px] uppercase tracking-[0.18em] text-white/40">
               Marketplace
             </p>
-            <ul className="space-y-3">
+            <ul className="space-y-3.5">
               {MARKETPLACE_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-xs text-white/30 transition-colors hover:text-white/55"
+                    className="text-xs text-white/40 transition-colors hover:text-white/70"
                   >
                     {link.label}
                   </Link>
@@ -79,15 +99,15 @@ export function Footer() {
 
           {/* Legal */}
           <div>
-            <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.16em] text-white/20">
+            <p className="mb-5 font-mono text-[10px] uppercase tracking-[0.18em] text-white/40">
               Legal
             </p>
-            <ul className="space-y-3">
+            <ul className="space-y-3.5">
               {LEGAL_LINKS.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-xs text-white/30 transition-colors hover:text-white/55"
+                    className="text-xs text-white/40 transition-colors hover:text-white/70"
                   >
                     {link.label}
                   </Link>
@@ -99,11 +119,11 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-12 flex items-center justify-between border-t border-white/[0.05] pt-6">
-          <p className="font-mono text-[10px] text-white/20">
+        <div className="mt-14 flex items-center justify-between border-t border-white/[0.10] pt-6">
+          <p className="font-mono text-[10px] text-white/40">
             © {new Date().getFullYear()} Vibe Code Market
           </p>
-          <p className="font-mono text-[10px] text-white/15">
+          <p className="font-mono text-[10px] text-white/30">
             10% fee · free to list
           </p>
         </div>

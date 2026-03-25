@@ -13,7 +13,11 @@
       "Bash(node -e \"console.log\\(require\\(''crypto''\\).randomBytes\\(32\\).toString\\(''hex''\\)\\)\")",
       "Bash(grep -E \"^tailwindcss$|^postcss$|^autoprefixer$|^tailwindcss-animate$\")",
       "Bash(grep -rn STORAGE_KEYs*= node_modules/@supabase/auth-js/dist/main/constants.js)",
-      "Bash(grep -rn STORAGE_KEYs*= node_modules/@supabase/auth-js/dist/)"
+      "Bash(grep -rn STORAGE_KEYs*= node_modules/@supabase/auth-js/dist/)",
+      "Bash(npm install:*)",
+      "Bash(node -e \"require\\(''@anthropic-ai/sdk''\\); console.log\\(''ok''\\)\")",
+      "Bash(node -e \"require\\(''jszip''\\); console.log\\(''ok''\\)\")",
+      "Bash(xargs kill:*)"
     ]
   }
 }

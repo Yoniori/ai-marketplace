@@ -4,7 +4,7 @@ import { UserMenu } from "@/components/layout/UserMenu";
 
 /**
  * Navbar — Server Component.
- * Dark glass surface anchored to the hero's #080808 background.
+ * Taller rail (h-16) with gradient-fill pill CTA for premium feel.
  */
 export async function Navbar() {
   const supabase = await createClient();
@@ -21,33 +21,54 @@ export async function Navbar() {
     : null;
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-white/[0.06] bg-[#080808]/90 backdrop-blur">
-      <div className="container flex h-14 items-center justify-between">
+    <header className="sticky top-0 z-50 w-full bg-[#080808]/92 backdrop-blur-md">
+
+      {/* Gradient bottom border — centered violet bloom, fades at edges */}
+      <div
+        aria-hidden
+        className="absolute inset-x-0 bottom-0 h-px"
+        style={{
+          background:
+            "linear-gradient(90deg, transparent 0%, hsl(256 60% 52% / 0.22) 25%, hsl(256 60% 52% / 0.22) 75%, transparent 100%)",
+        }}
+      />
+
+      <div className="container relative flex h-16 items-center justify-between">
 
         {/* Wordmark */}
-        <Link href="/" className="flex items-center gap-1.5 text-sm font-semibold text-white/90">
-          <span className="font-mono text-xs font-bold text-primary select-none leading-none">▸</span>
-          <span>Vibe Code Market</span>
+        <Link href="/" className="flex items-center gap-2.5 text-sm font-semibold text-white/90">
+          {/* Bordered badge glyph */}
+          <span
+            className="inline-flex h-5 w-5 items-center justify-center rounded border font-mono text-[10px] font-bold leading-none select-none"
+            style={{
+              borderColor: "hsl(256 60% 52% / 0.35)",
+              background: "hsl(256 60% 52% / 0.1)",
+              color: "hsl(256 85% 72%)",
+            }}
+          >
+            ▸
+          </span>
+          <span className="tracking-[-0.01em]">Vibe Code Market</span>
         </Link>
 
         {/* Primary nav */}
-        <nav className="hidden md:flex items-center">
+        <nav className="hidden md:flex items-center gap-1">
           <Link
             href="/browse"
-            className="px-3 py-1.5 rounded-md text-sm text-white/45 transition-colors hover:text-white hover:bg-white/[0.05]"
+            className="px-4 py-2 rounded-md text-sm text-white/60 transition-colors hover:text-white/90"
           >
             Browse
           </Link>
           <Link
             href="/signup"
-            className="px-3 py-1.5 rounded-md text-sm text-white/45 transition-colors hover:text-white hover:bg-white/[0.05]"
+            className="px-4 py-2 rounded-md text-sm text-white/60 transition-colors hover:text-white/90"
           >
             Sell
           </Link>
         </nav>
 
         {/* Auth */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {user && profile ? (
             <UserMenu
               displayName={profile.display_name ?? profile.username}
@@ -59,13 +80,21 @@ export async function Navbar() {
             <>
               <Link
                 href="/login"
-                className="px-3 py-1.5 rounded-md text-sm text-white/45 transition-colors hover:text-white"
+                className="px-3 py-1.5 text-sm text-white/60 transition-colors hover:text-white/80"
               >
                 Sign in
               </Link>
+
+              {/* Gradient-fill pill CTA */}
               <Link
                 href="/signup"
-                className="inline-flex h-8 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-white transition-colors hover:bg-primary/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                className="inline-flex h-9 items-center justify-center rounded-full px-5 text-sm font-semibold text-white transition-opacity duration-200 hover:opacity-85 focus-visible:outline-none"
+                style={{
+                  background:
+                    "linear-gradient(135deg, hsl(256 72% 56%), hsl(280 62% 50%))",
+                  boxShadow:
+                    "0 0 0 1px hsl(256 60% 52% / 0.35), 0 0 20px hsl(256 72% 58% / 0.22)",
+                }}
               >
                 Get started
               </Link>

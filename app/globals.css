@@ -118,4 +118,22 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  /* ── Primary CTA hover glow ───────────────────────────────────────────── */
+  /* Applied alongside bg-primary to add violet bloom on hover.             */
+  .btn-glow {
+    transition-property: box-shadow, background-color, color, border-color, opacity;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 200ms;
+  }
+  .btn-glow:hover {
+    box-shadow:
+      0 0 0 1px hsl(256 56% 50% / 0.35),
+      0 0 22px hsl(256 70% 62% / 0.26);
+  }
+  .btn-glow:focus-visible {
+    box-shadow:
+      0 0 0 2px hsl(256 56% 50% / 0.5),
+      0 0 16px hsl(256 70% 62% / 0.2);
+  }
 }
