@@ -44,7 +44,16 @@ export async function GET(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const adminClient = await createAdminClient();
+  let adminClient: Awaited<ReturnType<typeof createAdminClient>>;
+  try {
+    adminClient = await createAdminClient();
+  } catch (err) {
+    console.error("[GET /check/latest] Admin client unavailable:", err instanceof Error ? err.message : err);
+    return NextResponse.json(
+      { error: "Service temporarily unavailable. Please try again later." },
+      { status: 500 }
+    );
+  }
 
   // Cast for new columns / tables not yet in generated DB types.
   // TODO: remove after `npm run db:types` post-migration.

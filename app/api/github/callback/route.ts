@@ -169,7 +169,15 @@ export async function GET(request: Request) {
 
   // ── Encrypt the access token ─────────────────────────────────
   // The plaintext token never touches the database.
-  const encrypted = encryptToken(accessToken);
+  // encryptToken() calls getGitHubEncryptionKey() which throws if the env
+  // var is absent or malformed — guard so we return a friendly redirect.
+  let encrypted: ReturnType<typeof encryptToken>;
+  try {
+    encrypted = encryptToken(accessToken);
+  } catch (err) {
+    console.error("[GitHub Callback] Token encryption failed:", err);
+    return errorRedirect("encryption_failed");
+  }
 
   // ── Upsert connection row ────────────────────────────────────
   // createAdminClient() bypasses RLS — required because the anon client's

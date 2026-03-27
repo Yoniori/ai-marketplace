@@ -32,8 +32,14 @@ export function OAuthButton({ next = "/dashboard" }: OAuthButtonProps) {
     // Use the explicit app URL env var so production always redirects to the
     // correct domain. Falls back to window.location.origin for local dev
     // when NEXT_PUBLIC_APP_URL is not set.
+    //
+    // ⚠️  Do NOT append query params (e.g. ?next=...) to redirectTo.
+    // Supabase stores the full redirectTo URL inside the OAuth state token.
+    // When the state is looked up on the way back, the query string causes
+    // the URL to fail allowlist matching and produces "bad_oauth_state".
+    // The /auth/callback route defaults to /dashboard, so omitting ?next is fine.
     const baseUrl  = process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin;
-    const callback = `${baseUrl}/auth/callback?next=${encodeURIComponent(next)}`;
+    const callback = `${baseUrl}/auth/callback`;
 
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: "google",

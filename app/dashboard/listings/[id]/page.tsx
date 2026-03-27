@@ -28,8 +28,14 @@ export default async function ListingDetailPage({
 
   if (!user) redirect("/login");
 
-  // Use admin client to read draft listings + new columns
-  const adminClient = await createAdminClient();
+  // Use admin client to read draft listings + new columns.
+  // Falls back to user client if SUPABASE_SERVICE_ROLE_KEY is absent.
+  let adminClient: Awaited<ReturnType<typeof createAdminClient>>;
+  try {
+    adminClient = await createAdminClient();
+  } catch {
+    adminClient = userClient as unknown as Awaited<ReturnType<typeof createAdminClient>>;
+  }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = adminClient as any;
 

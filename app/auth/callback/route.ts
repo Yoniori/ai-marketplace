@@ -33,20 +33,6 @@ export async function GET(request: NextRequest) {
   const errorDesc = searchParams.get("error_description");
   const next      = searchParams.get("next") ?? "/dashboard";
 
-  // ── [DIAG] Log all incoming cookies — PKCE verifier must be present ────────
-  const allIncomingCookies = request.cookies.getAll();
-  console.log("[OAuth-CB:diag] ALL incoming cookie names:",
-    allIncomingCookies.map((c) => c.name)
-  );
-  const pkceCookie = allIncomingCookies.find((c) => c.name.includes("code-verifier"));
-  console.log(
-    "[OAuth-CB:diag] PKCE verifier cookie:",
-    pkceCookie
-      ? `FOUND — name="${pkceCookie.name}" value="${pkceCookie.value.slice(0, 20)}…"`
-      : "MISSING ⚠️  — this will cause exchangeCodeForSession to fail"
-  );
-  // ── [DIAG] End ──────────────────────────────────────────────────────────────
-
   console.log("[OAuth] code:", !!code, "| next:", next, "| origin:", origin);
 
   // ── Provider-level error (user denied access, etc.) ──────────────────────
@@ -85,13 +71,6 @@ export async function GET(request: NextRequest) {
       },
     },
   });
-
-  // ── [DIAG] Exact cookie check right before exchange ──────────────────────
-  console.log('[OAuth-CB:diag] cookie names:', request.cookies.getAll().map(c => c.name))
-  const pkce = request.cookies.get('sb-mnjgulzwzxrfwlbpfghh-auth-token-code-verifier')
-  console.log('[OAuth-CB:diag] pkce exists:', !!pkce)
-  console.log('[OAuth-CB:diag] pkce value length:', pkce?.value?.length ?? 0)
-  // ── [DIAG] End ────────────────────────────────────────────────────────────
 
   // ── Exchange one-time code for a session ──────────────────────────────────
   const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);

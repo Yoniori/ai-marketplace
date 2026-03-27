@@ -53,11 +53,23 @@ export async function GET(request: Request) {
   });
 
   // ── Build authorisation URL ─────────────────────────────────
+  // getGitHubClientId() throws if GITHUB_CLIENT_ID env var is absent.
+  // Catch it and return a readable error redirect to settings.
+  let clientId: string;
+  try {
+    clientId = getGitHubClientId();
+  } catch (err) {
+    console.error("[GitHub Connect] GITHUB_CLIENT_ID not configured:", err);
+    const errUrl = new URL("/dashboard/settings", origin);
+    errUrl.searchParams.set("github_error", "github_not_configured");
+    return NextResponse.redirect(errUrl);
+  }
+
   const appUrl      = process.env.NEXT_PUBLIC_APP_URL ?? origin;
   const redirectUri = `${appUrl}/api/github/callback`;
 
   const authUrl = new URL("https://github.com/login/oauth/authorize");
-  authUrl.searchParams.set("client_id",    getGitHubClientId());
+  authUrl.searchParams.set("client_id",    clientId);
   authUrl.searchParams.set("redirect_uri", redirectUri);
   authUrl.searchParams.set("scope",        "public_repo read:user");
   authUrl.searchParams.set("state",        state);

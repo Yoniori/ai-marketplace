@@ -55,7 +55,16 @@ export async function POST(
   // ── Fetch listing ─────────────────────────────────────────────
   // Use admin client so we can read listings at any status (draft, etc.)
   // without being limited by the public-read-published RLS policy.
-  const adminClient = await createAdminClient();
+  let adminClient: Awaited<ReturnType<typeof createAdminClient>>;
+  try {
+    adminClient = await createAdminClient();
+  } catch (err) {
+    console.error("[POST /check] Admin client unavailable:", err instanceof Error ? err.message : err);
+    return NextResponse.json(
+      { error: "Service temporarily unavailable. Please try again later." },
+      { status: 500 }
+    );
+  }
 
   // Cast to any for: (a) listing_checks table not yet in generated types,
   // (b) files_path / review_status columns not yet in generated types.

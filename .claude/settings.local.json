@@ -23,7 +23,14 @@
       "Bash(git commit:*)",
       "Bash(git remote:*)",
       "Bash(ls -la .env*)",
-      "Bash(node -e \"const pkg = require\\(''./node_modules/@supabase/postgrest-js/package.json''\\); console.log\\(pkg.version\\)\")"
+      "Bash(node -e \"const pkg = require\\(''./node_modules/@supabase/postgrest-js/package.json''\\); console.log\\(pkg.version\\)\")",
+      "Bash(node -e \":*)",
+      "Bash(find node_modules/@supabase/supabase-js/dist -name *.js)",
+      "Bash(npm info:*)",
+      "Bash(node -e \"console.log\\(require\\(''./node_modules/@supabase/ssr/package.json''\\).version\\)\")",
+      "Bash(git -C /Users/yonatanori/ai-marketplace status --short)",
+      "Read(//Users/yonatanori/ai-marketplace/**)",
+      "Bash(supabase migration:*)"
     ]
   }
 }

@@ -70,11 +70,18 @@ export default async function ListingsPage() {
 
   // Fetch listings using admin client so we can read all statuses
   // and the new review_status column (added in 011_listing_checks.sql).
-  const adminClient = await createAdminClient();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const db = adminClient as any;
+  // Wrapped in try/catch: createAdminClient() throws if SUPABASE_SERVICE_ROLE_KEY
+  // is absent, which would otherwise crash the server component.
+  let db: Awaited<ReturnType<typeof createAdminClient>>;
+  try {
+    db = await createAdminClient();
+  } catch {
+    // Service key unavailable — fall back to user client.
+    // The user can only see their own listings through RLS.
+    db = userClient as unknown as Awaited<ReturnType<typeof createAdminClient>>;
+  }
 
-  const { data: listings } = await db
+  const { data: listings } = await (db as any)
     .from("listings")
     .select(
       `
