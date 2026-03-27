@@ -12,7 +12,11 @@ type ProfileRow = {
 
 /**
  * Navbar — Server Component.
- * Taller rail (h-16) with gradient-fill pill CTA for premium feel.
+ * Glassmorphism rail with Stitch neon-dark design system:
+ *   • Frosted glass bg + cyan bottom glow
+ *   • Space Grotesk wordmark with cyan→violet gradient
+ *   • JetBrains Mono nav links
+ *   • Cyan→violet gradient CTA pill with glow
  */
 export async function Navbar() {
   const supabase = await createClient();
@@ -28,53 +32,58 @@ export async function Navbar() {
     : null;
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-[#080808]/92 backdrop-blur-md">
-
-      {/* Gradient bottom border — centered violet bloom, fades at edges */}
-      <div
-        aria-hidden
-        className="absolute inset-x-0 bottom-0 h-px"
-        style={{
-          background:
-            "linear-gradient(90deg, transparent 0%, hsl(256 60% 52% / 0.22) 25%, hsl(256 60% 52% / 0.22) 75%, transparent 100%)",
-        }}
-      />
-
+    <header
+      className="sticky top-0 z-50 w-full"
+      style={{
+        background: "rgba(14, 14, 16, 0.80)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        borderBottom: "1px solid rgba(0, 255, 255, 0.10)",
+        boxShadow: "0 0 40px rgba(0, 255, 255, 0.06), 0 1px 0 rgba(0,255,255,0.06)",
+      }}
+    >
       <div className="container relative flex h-16 items-center justify-between">
 
-        {/* Wordmark */}
-        <Link href="/" className="flex items-center gap-2.5 text-sm font-semibold text-white/90">
-          {/* Bordered badge glyph */}
+        {/* ── Wordmark ── */}
+        <Link href="/" className="flex items-center gap-2.5 group">
+          {/* Glyph badge */}
           <span
-            className="inline-flex h-5 w-5 items-center justify-center rounded border font-mono text-[10px] font-bold leading-none select-none"
+            className="inline-flex h-6 w-6 items-center justify-center rounded-lg font-mono text-[11px] font-bold leading-none select-none transition-all duration-300 group-hover:shadow-[0_0_12px_rgba(0,255,255,0.4)]"
             style={{
-              borderColor: "hsl(256 60% 52% / 0.35)",
-              background: "hsl(256 60% 52% / 0.1)",
-              color: "hsl(256 85% 72%)",
+              border: "1px solid rgba(0, 255, 255, 0.30)",
+              background: "rgba(0, 255, 255, 0.08)",
+              color: "#00e6e6",
             }}
           >
             ▸
           </span>
-          <span className="tracking-[-0.01em]">Vibe Code Market</span>
+          <span
+            className="font-headline text-sm font-bold tracking-tight bg-clip-text text-transparent"
+            style={{
+              backgroundImage: "linear-gradient(135deg, #c1fffe 0%, #bf81ff 100%)",
+            }}
+          >
+            Vibe Code Market
+          </span>
         </Link>
 
-        {/* Primary nav */}
+        {/* ── Primary nav ── */}
         <nav className="hidden md:flex items-center gap-1">
           <Link
             href="/browse"
-            className="px-4 py-2 rounded-md text-sm text-white/60 transition-colors hover:text-white/90"
+            className="font-mono px-4 py-2 rounded-lg text-sm text-on-surface-variant transition-all duration-200 hover:text-cyan-400 hover:bg-cyan-400/5"
           >
             Browse
           </Link>
           <Link
             href="/signup"
-            className="px-4 py-2 rounded-md text-sm text-white/60 transition-colors hover:text-white/90"
+            className="font-mono px-4 py-2 rounded-lg text-sm text-on-surface-variant transition-all duration-200 hover:text-cyan-400 hover:bg-cyan-400/5"
           >
             Sell
           </Link>
         </nav>
 
-        {/* Auth */}
+        {/* ── Auth ── */}
         <div className="flex items-center gap-3">
           {user && profile ? (
             <UserMenu
@@ -87,20 +96,18 @@ export async function Navbar() {
             <>
               <Link
                 href="/login"
-                className="px-3 py-1.5 text-sm text-white/60 transition-colors hover:text-white/80"
+                className="font-mono px-3 py-1.5 text-sm text-on-surface-variant transition-colors hover:text-cyan-400"
               >
                 Sign in
               </Link>
 
-              {/* Gradient-fill pill CTA */}
+              {/* Cyan→violet gradient CTA pill */}
               <Link
                 href="/signup"
-                className="inline-flex h-9 items-center justify-center rounded-full px-5 text-sm font-semibold text-white transition-opacity duration-200 hover:opacity-85 focus-visible:outline-none"
+                className="inline-flex h-9 items-center justify-center rounded-full px-5 font-headline text-sm font-bold tracking-tight text-[#0e0e10] transition-all duration-200 hover:scale-105 active:scale-95 focus-visible:outline-none"
                 style={{
-                  background:
-                    "linear-gradient(135deg, hsl(256 72% 56%), hsl(280 62% 50%))",
-                  boxShadow:
-                    "0 0 0 1px hsl(256 60% 52% / 0.35), 0 0 20px hsl(256 72% 58% / 0.22)",
+                  background: "linear-gradient(135deg, #00e6e6, #9c42f4)",
+                  boxShadow: "0 0 20px rgba(0, 230, 230, 0.30)",
                 }}
               >
                 Get started

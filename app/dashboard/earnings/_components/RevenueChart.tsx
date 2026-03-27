@@ -15,11 +15,15 @@ interface RevenueChartProps {
   data: DailyRevenue[];
 }
 
-function shortDate(dateStr: string): string {
+function shortDate(label: unknown): string {
   // "2025-03-15" → "Mar 15"
+  const dateStr = String(label ?? "");
   const [, month, day] = dateStr.split("-");
   const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  return `${months[parseInt(month, 10) - 1]} ${parseInt(day, 10)}`;
+  const m = parseInt(month, 10);
+  const d = parseInt(day, 10);
+  if (isNaN(m) || isNaN(d)) return dateStr;
+  return `${months[m - 1]} ${d}`;
 }
 
 function formatTooltipValue(value: number): string {
@@ -64,7 +68,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
             tickLine={false}
           />
           <Tooltip
-            formatter={(value: number) => [formatTooltipValue(value), "Revenue"]}
+            formatter={(value: unknown) => [formatTooltipValue(Number(value ?? 0)), "Revenue"]}
             labelFormatter={shortDate}
             contentStyle={{
               background: "hsl(var(--card))",

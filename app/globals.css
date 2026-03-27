@@ -3,72 +3,77 @@
 @tailwind utilities;
 
 @layer base {
+  /* ── Light mode — kept minimal; app runs in forced dark mode ── */
   :root {
-    /* ── Neutrals — pure gray, no blue tint ── */
     --background:         0 0% 100%;
     --foreground:         0 0% 6%;
-
     --card:               0 0% 100%;
     --card-foreground:    0 0% 6%;
-
     --popover:            0 0% 100%;
     --popover-foreground: 0 0% 6%;
-
-    /* ── Primary — violet, reserved for CTAs and active states ── */
-    --primary:            256 56% 50%;
+    --primary:            180 100% 35%;
     --primary-foreground: 0 0% 100%;
-
-    /* ── Surfaces ── */
     --secondary:            0 0% 96%;
     --secondary-foreground: 0 0% 15%;
-
     --muted:            0 0% 96%;
     --muted-foreground: 0 0% 45%;
-
     --accent:            0 0% 94%;
     --accent-foreground: 0 0% 10%;
-
-    /* ── Semantic ── */
-    --destructive:            0 72% 51%;
+    --destructive:            2 100% 59%;
     --destructive-foreground: 0 0% 100%;
-
-    /* ── Structural ── */
     --border: 0 0% 89%;
     --input:  0 0% 89%;
-    --ring:   256 56% 50%;
-
-    /* ── Shape ── */
+    --ring:   180 100% 35%;
     --radius: 0.5rem;
   }
 
+  /* ── Dark mode — Stitch neon-dark design system ───────────────────────────
+   *
+   *  Color key (Stitch → HSL conversion):
+   *    background / surface  #0e0e10  →  240  7%  6%
+   *    card / surface-container  #19191c  →  240  6%  10%
+   *    popover  #1f1f22  →  240  5%  13%
+   *    primary (cyan)  #00e6e6  →  180 100%  45%
+   *    secondary (violet)  #9c42f4  →  270  89%  61%
+   *    muted-foreground  #adaaad  →  300   1%  67%
+   *    border / outline-variant  #48474a  →  260   2%  28%
+   *
+   * ─────────────────────────────────────────────────────────────────────── */
   .dark {
-    --background:         0 0% 5%;
-    --foreground:         0 0% 95%;
+    /* Surfaces */
+    --background:         240 7% 6%;     /* #0e0e10 — Stitch "surface" */
+    --foreground:         240 5% 96%;    /* near-white main text */
 
-    --card:               0 0% 8%;
-    --card-foreground:    0 0% 95%;
+    --card:               240 6% 10%;   /* #19191c — elevated glass surface */
+    --card-foreground:    240 5% 96%;
 
-    --popover:            0 0% 8%;
-    --popover-foreground: 0 0% 95%;
+    --popover:            240 5% 13%;   /* #1f1f22 — dropdown surface */
+    --popover-foreground: 240 5% 96%;
 
-    --primary:            256 60% 64%;
-    --primary-foreground: 0 0% 100%;
+    /* Primary — cyan replaces violet as the signature accent */
+    --primary:            180 100% 45%; /* #00e6e6 — Stitch primary-dim */
+    --primary-foreground: 240  7%  6%;  /* dark text on bright cyan */
 
-    --secondary:            0 0% 13%;
-    --secondary-foreground: 0 0% 88%;
+    /* Secondary — violet */
+    --secondary:            270 89% 61%; /* #9c42f4 — Stitch secondary-dim */
+    --secondary-foreground: 0   0% 100%;
 
-    --muted:            0 0% 13%;
-    --muted-foreground: 0 0% 55%;
+    /* Muted surfaces */
+    --muted:            240 5% 13%;     /* #1f1f22 */
+    --muted-foreground: 300 1% 67%;     /* #adaaad — Stitch on-surface-variant */
 
-    --accent:            0 0% 15%;
-    --accent-foreground: 0 0% 95%;
+    /* Accent */
+    --accent:            240 5% 16%;
+    --accent-foreground: 240 5% 96%;
 
-    --destructive:            0 60% 42%;
-    --destructive-foreground: 0 0% 100%;
+    /* Destructive — Stitch error #ff716c */
+    --destructive:            2 100% 71%;
+    --destructive-foreground: 0 0%   100%;
 
-    --border: 0 0% 15%;
-    --input:  0 0% 15%;
-    --ring:   256 60% 64%;
+    /* Structure — visible dark borders, cyan focus rings */
+    --border: 260 2% 28%;   /* #48474a — Stitch outline-variant */
+    --input:  260 2% 28%;
+    --ring:   180 100% 45%; /* cyan — matches primary */
   }
 }
 
@@ -117,6 +122,45 @@
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  /* ── Stitch design system utilities ───────────────────────────────────── */
+
+  /*
+   * Feature tile — per-card CSS custom properties set via inline style:
+   *   --tile-glow:   rgba colour for box-shadow bloom
+   *   --tile-border: rgba colour for border on hover
+   * Using CSS custom properties avoids onMouseEnter/onMouseLeave JS handlers
+   * so the component can remain a Next.js Server Component.
+   */
+  .feature-tile {
+    transition: box-shadow 0.30s ease, border-color 0.30s ease;
+  }
+  .feature-tile:hover {
+    box-shadow: 0 0 40px var(--tile-glow, rgba(0,255,255,0.06));
+    border-color: var(--tile-border, rgba(0,255,255,0.30)) !important;
+  }
+  .feature-tile:hover .feature-tile-top-line {
+    opacity: 1;
+  }
+
+  /* Glassmorphism card — dark frosted surface */
+  .glass-card {
+    background: rgba(25, 25, 28, 0.80);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  /* Cyan neon glow — applied as box-shadow */
+  .neon-glow-cyan {
+    box-shadow: 0 0 40px rgba(0, 255, 255, 0.10);
+  }
+
+  /* Dual ambient light leak — cyan top-right + violet bottom-left */
+  .light-leak {
+    background:
+      radial-gradient(circle at top right, rgba(0, 255, 255, 0.05), transparent 40%),
+      radial-gradient(circle at bottom left, rgba(119, 1, 208, 0.05), transparent 40%);
   }
 
   /* ── Primary CTA hover glow ───────────────────────────────────────────── */
