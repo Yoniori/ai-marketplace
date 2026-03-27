@@ -1,3 +1,7 @@
+// Vercel: allow up to 60 s for the synchronous Claude call (~10–20 s typical).
+// Without this, Hobby plan kills the function at 10 s.
+export const maxDuration = 60;
+
 /**
  * POST /api/listings/[id]/check
  *

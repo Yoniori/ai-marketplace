@@ -1,17 +1,22 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 
 export type ListingResult =
   | { success: true; listingId: string }
   | { success: false; error: string };
 
+export type UploadResult =
+  | { success: true; filesPath: string }
+  | { success: false; error: string };
+
 /**
- * createListing — Server action called from /dashboard/listings/new.
+ * createListing — Phase 1 of the "New listing" flow.
  *
- * Creates a draft listing for the authenticated creator and redirects
- * to the listing detail page so the AI quality check can run immediately.
+ * Creates a draft listing from text fields and returns the new listing's ID.
+ * The caller (page component) is responsible for navigation after this
+ * returns — we do NOT call redirect() here so the page can optionally run
+ * Phase 2 (ZIP upload) before pushing to the detail route.
  */
 export async function createListing(
   _prevState: ListingResult | null,
@@ -37,11 +42,11 @@ export async function createListing(
   }
 
   // Parse form fields
-  const title      = (formData.get("title")       as string)?.trim();
-  const tagline    = (formData.get("tagline")      as string)?.trim() || null;
-  const description = (formData.get("description") as string)?.trim() || null;
-  const priceType  = (formData.get("price_type")   as string) || "free";
-  const priceRaw   = (formData.get("price_cents")  as string) || "0";
+  const title       = (formData.get("title")       as string)?.trim();
+  const tagline     = (formData.get("tagline")      as string)?.trim() || null;
+  const description = (formData.get("description")  as string)?.trim() || null;
+  const priceType   = (formData.get("price_type")   as string) || "free";
+  const priceRaw    = (formData.get("price_cents")  as string) || "0";
 
   if (!title) return { success: false, error: "Title is required." };
   if (title.length > 120) return { success: false, error: "Title must be 120 characters or fewer." };
@@ -52,12 +57,11 @@ export async function createListing(
       ? Math.max(0, Math.round(parseFloat(priceRaw) * 100))
       : 0;
 
-  // Use admin client for the insert to bypass RLS on status column
+  // Use admin client for the insert (bypasses RLS on status column)
   let db: Awaited<ReturnType<typeof createAdminClient>>;
   try {
     db = await createAdminClient();
   } catch {
-    // Fall back to regular client if service key is unavailable
     db = supabase as unknown as Awaited<ReturnType<typeof createAdminClient>>;
   }
 
@@ -81,6 +85,113 @@ export async function createListing(
     return { success: false, error: "Failed to create listing. Please try again." };
   }
 
-  // Redirect happens outside the return — redirect() throws internally in Next.js
-  redirect(`/dashboard/listings/${listing.id}`);
+  return { success: true, listingId: listing.id };
+}
+
+/**
+ * uploadListingZip — Phase 2 of the "New listing" flow.
+ *
+ * Receives a single ZIP file from a FormData object, uploads it to the
+ * `listing-files` Supabase Storage bucket, and writes the storage path to
+ * listings.files_path.
+ *
+ * Design decisions:
+ *   • Uses adminClient for Storage so no Storage RLS policy is required on
+ *     the bucket — the ownership check is enforced in this action instead.
+ *   • Stored path format: `{listingId}/product.zip` (within the bucket).
+ *   • Existing files are overwritten (upsert: true) so re-uploads work.
+ *   • File validation (type + size) is double-checked server-side even
+ *     though the form already validates client-side.
+ *   • A failed upload is non-fatal: the caller still navigates to the
+ *     listing detail page and the Gatekeeper will scan description-only.
+ *
+ * Body size: next.config.mjs sets serverActions.bodySizeLimit = '50mb'.
+ */
+export async function uploadListingZip(
+  listingId: string,
+  formData: FormData
+): Promise<UploadResult> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { success: false, error: "Not authenticated." };
+
+  // Ownership guard — use regular client (RLS scoped to authenticated user)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: listing } = await (supabase as any)
+    .from("listings")
+    .select("creator_id")
+    .eq("id", listingId)
+    .eq("creator_id", user.id)
+    .maybeSingle();
+
+  if (!listing) {
+    return { success: false, error: "Listing not found or access denied." };
+  }
+
+  // Extract and validate file
+  const file = formData.get("product_zip") as File | null;
+
+  if (!file || file.size === 0) {
+    return { success: false, error: "No file received." };
+  }
+  if (!file.name.toLowerCase().endsWith(".zip")) {
+    return { success: false, error: "Only .zip files are accepted." };
+  }
+  const MAX_BYTES = 50 * 1024 * 1024; // 50 MB
+  if (file.size > MAX_BYTES) {
+    return {
+      success: false,
+      error: `File is ${(file.size / 1024 / 1024).toFixed(1)} MB — maximum is 50 MB.`,
+    };
+  }
+
+  // Upload via admin client (bypasses Storage RLS)
+  let admin: Awaited<ReturnType<typeof createAdminClient>>;
+  try {
+    admin = await createAdminClient();
+  } catch {
+    // Fall back to user client — upload may fail if Storage RLS is strict
+    admin = supabase as unknown as Awaited<ReturnType<typeof createAdminClient>>;
+  }
+
+  const storagePath = `${listingId}/product.zip`;
+
+  const { error: uploadError } = await admin.storage
+    .from("listing-files")
+    .upload(storagePath, file, {
+      upsert:      true,           // overwrite on re-upload
+      contentType: "application/zip",
+    });
+
+  if (uploadError) {
+    console.error("[uploadListingZip] Storage upload failed:", uploadError.message);
+
+    // Surface a friendly message for the most common cause
+    const msg = uploadError.message.toLowerCase().includes("bucket")
+      ? "Storage bucket not found. Ask your admin to create the 'listing-files' bucket in Supabase."
+      : `Upload failed: ${uploadError.message}`;
+
+    return { success: false, error: msg };
+  }
+
+  // Persist the path on the listing row
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error: updateError } = await (admin as any)
+    .from("listings")
+    .update({ files_path: storagePath })
+    .eq("id", listingId);
+
+  if (updateError) {
+    console.error("[uploadListingZip] files_path update failed:", updateError.message);
+    // Upload succeeded but DB write failed — not worth blocking the user
+    return {
+      success: false,
+      error: "File uploaded but path could not be saved. Run the check anyway — it will skip file analysis.",
+    };
+  }
+
+  return { success: true, filesPath: storagePath };
 }
