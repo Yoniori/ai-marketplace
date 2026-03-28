@@ -2,6 +2,36 @@
 
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 
+// ── Slug helpers ──────────────────────────────────────────────────────────────
+
+/**
+ * Convert a listing title to a URL-safe slug.
+ * "My Cool Project!!" → "my-cool-project"
+ */
+function slugify(title: string): string {
+  return title
+    .toLowerCase()
+    .normalize("NFD")                     // decompose accented chars
+    .replace(/[\u0300-\u036f]/g, "")      // strip accent marks
+    .replace(/[^a-z0-9\s-]/g, "")        // remove non-alphanumeric (keep spaces + hyphens)
+    .trim()
+    .replace(/\s+/g, "-")                 // spaces → hyphens
+    .replace(/-+/g, "-")                  // collapse multiple hyphens
+    .slice(0, 80);                        // cap at 80 chars so suffix fits in the column
+}
+
+/** 6-char alphanumeric suffix for collision resistance, e.g. "a3f9kz". */
+function randomSuffix(): string {
+  return Math.random().toString(36).slice(2, 8);
+}
+
+/** Full slug: "my-cool-project-a3f9kz" */
+function generateSlug(title: string): string {
+  const base   = slugify(title) || "listing"; // fallback if title is all symbols
+  const suffix = randomSuffix();
+  return `${base}-${suffix}`;
+}
+
 export type ListingResult =
   | { success: true; listingId: string }
   | { success: false; error: string };
@@ -70,6 +100,7 @@ export async function createListing(
     .from("listings")
     .insert({
       creator_id:  user.id,
+      slug:        generateSlug(title),   // e.g. "my-project-a3f9kz"
       title,
       tagline,
       description: description || `Draft listing: ${title}`,
