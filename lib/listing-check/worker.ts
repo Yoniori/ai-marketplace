@@ -96,7 +96,7 @@ export async function runCheck(
     const anthropic = new Anthropic({ apiKey: getAnthropicKey() });
 
     const response = await anthropic.messages.create({
-      model: "claude-3-5-sonnet-20241022",
+      model: "claude-3-5-sonnet-latest",
       max_tokens: 1024,
       system: SYSTEM_PROMPT,
       messages: [{ role: "user", content: userMessage }],
@@ -132,7 +132,7 @@ export async function runCheck(
         overall_score: report.overall_score,
         report: report as unknown as Record<string, unknown>,
         files_analyzed: fileNames,
-        model_used: "claude-3-5-sonnet-20241022",
+        model_used: "claude-3-5-sonnet-latest",
         duration_ms: Date.now() - start,
       })
       .eq("id", checkId);

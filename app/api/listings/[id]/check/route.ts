@@ -226,7 +226,7 @@ export async function POST(
       overall_score: report.overall_score,
       report,
       files_analyzed: null,
-      model_used: "claude-3-5-sonnet-20241022",
+      model_used: "claude-3-5-sonnet-latest",
       duration_ms: null,
       error_message: null,
     };
