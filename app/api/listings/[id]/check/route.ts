@@ -195,12 +195,43 @@ export async function POST(
       });
     }
 
-    return NextResponse.json({
-      check_id: check.id,
+    // ── Return the full check row ──────────────────────────────
+    // Re-read from DB so the client gets the authoritative persisted state
+    // (scores, files_analyzed, model_used, duration_ms, etc.) in one shot.
+    // This lets the frontend set state directly from this response without
+    // a second GET /check/latest round-trip that could race against a slow
+    // DB write and return a stale "running" row.
+    const { data: finalCheck } = await db
+      .from("listing_checks")
+      .select(
+        `id, status, outcome, triggered_at, completed_at,
+         completeness_score, security_score, clarity_score, overall_score,
+         report, files_analyzed, model_used, duration_ms, error_message`
+      )
+      .eq("id", check.id)
+      .single();
+
+    // If the re-read somehow fails (should never happen), fall back to
+    // constructing the shape from the in-memory report so the client still
+    // gets a usable response.
+    const responseCheck = finalCheck ?? {
+      id: check.id,
+      status: "done",
       outcome: report.outcome,
+      triggered_at: new Date().toISOString(),
+      completed_at: new Date().toISOString(),
+      completeness_score: report.completeness_score,
+      security_score: report.security_score,
+      clarity_score: report.clarity_score,
       overall_score: report.overall_score,
       report,
-    });
+      files_analyzed: null,
+      model_used: "claude-3-5-sonnet-20241022",
+      duration_ms: null,
+      error_message: null,
+    };
+
+    return NextResponse.json({ check: responseCheck });
   } catch (err) {
     // Worker already marked the check row as 'failed'.
     // Reset review_status so the creator can retry.

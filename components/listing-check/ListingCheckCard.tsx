@@ -220,6 +220,9 @@ function LoadingView() {
 
 // ── Main component ────────────────────────────────────────────
 
+// How old a "running" check must be (ms) before we consider it stuck.
+const STUCK_THRESHOLD_MS = 90_000; // 90 seconds
+
 export function ListingCheckCard({ listingId }: Props) {
   const [check, setCheck] = useState<ListingCheck | null | undefined>(
     undefined // undefined = initial fetch pending
@@ -228,6 +231,7 @@ export function ListingCheckCard({ listingId }: Props) {
   const [runError, setRunError] = useState<string | null>(null);
   const [showImprovements, setShowImprovements] = useState(true);
 
+  // ── Initial load ───────────────────────────────────────────
   useEffect(() => {
     fetch(`/api/listings/${listingId}/check/latest`)
       .then((r) => r.json())
@@ -235,6 +239,45 @@ export function ListingCheckCard({ listingId }: Props) {
       .catch(() => setCheck(null));
   }, [listingId]);
 
+  // ── Stuck-running detection ────────────────────────────────
+  // If the DB has a "running" row from a previous crashed request and the
+  // user did NOT actively start a check (isRunning=false), re-poll once
+  // after 5 s. If it is still "running" and was triggered more than
+  // STUCK_THRESHOLD_MS ago, force it to a failed state so the creator
+  // sees a re-run button instead of an infinite spinner.
+  useEffect(() => {
+    if (check?.status !== "running" || isRunning) return;
+
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/listings/${listingId}/check/latest`);
+        const { check: latest } = await res.json();
+
+        if (!latest || latest.status !== "running") {
+          setCheck(latest ?? null);
+          return;
+        }
+
+        // Still running — check age
+        const ageMs = Date.now() - new Date(latest.triggered_at).getTime();
+        if (ageMs > STUCK_THRESHOLD_MS) {
+          setCheck({
+            ...latest,
+            status: "failed",
+            error_message:
+              "The check didn't complete in time. This is usually a transient issue — please re-run.",
+          });
+        }
+        // If recent, leave it — the user likely has another tab running it
+      } catch {
+        // Swallow — don't change state on network error
+      }
+    }, 5_000);
+
+    return () => clearTimeout(timer);
+  }, [check?.status, isRunning, listingId]);
+
+  // ── Trigger check ──────────────────────────────────────────
   async function handleRunCheck() {
     setIsRunning(true);
     setRunError(null);
@@ -247,10 +290,10 @@ export function ListingCheckCard({ listingId }: Props) {
         setRunError(data.error ?? "Check failed. Please try again.");
         return;
       }
-      const refreshed = await fetch(
-        `/api/listings/${listingId}/check/latest`
-      ).then((r) => r.json());
-      setCheck(refreshed.check ?? null);
+      // Route now returns { check: fullCheckRow } — set state directly.
+      // No second GET /check/latest needed; this eliminates the race where
+      // a slow DB write returns a stale "running" row to the re-fetch.
+      setCheck(data.check ?? null);
     } catch {
       setRunError("Network error. Please try again.");
     } finally {
