@@ -45,6 +45,16 @@ export async function POST(
 ) {
   const { id } = await params;
 
+  // ── Production env audit (logged on every request) ───────────
+  // Shows in Vercel Dashboard → Logs. Never logs actual key values.
+  console.log("[POST /check] ENV AUDIT", {
+    NEXT_PUBLIC_SUPABASE_URL:    !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    SUPABASE_SERVICE_ROLE_KEY:   !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+    OPENAI_API_KEY:              !!process.env.OPENAI_API_KEY,
+    NODE_ENV:                    process.env.NODE_ENV,
+  });
+
   // ── Auth ─────────────────────────────────────────────────────
   const userClient = await createClient();
   const {
