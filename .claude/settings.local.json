@@ -30,7 +30,23 @@
       "Bash(node -e \"console.log\\(require\\(''./node_modules/@supabase/ssr/package.json''\\).version\\)\")",
       "Bash(git -C /Users/yonatanori/ai-marketplace status --short)",
       "Read(//Users/yonatanori/ai-marketplace/**)",
-      "Bash(supabase migration:*)"
+      "Bash(supabase migration:*)",
+      "Bash(grep -rn \"onMouse\\\\|onClick\\\\|onChange\\\\|onSubmit\\\\|onKey\" /Users/yonatanori/ai-marketplace/components /Users/yonatanori/ai-marketplace/app --include=*.tsx --exclude-dir=node_modules -l)",
+      "Bash(while read:*)",
+      "Bash(do if:*)",
+      "Bash(then echo:*)",
+      "Bash(npm run:*)",
+      "Bash(git add:*)",
+      "Bash(git push:*)",
+      "Bash(grep -rn ListingCard /Users/yonatanori/ai-marketplace/app /Users/yonatanori/ai-marketplace/components --include=*.tsx)",
+      "Bash(node -e \"require\\(''dotenv''\\).config\\({ path: ''.env.local'' }\\); console.log\\(''KEY present:'', !!process.env.ANTHROPIC_API_KEY, ''| starts with sk-ant:'', process.env.ANTHROPIC_API_KEY?.startsWith\\(''sk-ant-''\\)\\)\")",
+      "Bash(grep -n \"return NextResponse.json\" /Users/yonatanori/ai-marketplace/app/api/listings/[id]/check/route.ts)",
+      "Bash(python3 -c \":*)",
+      "Bash(grep -n \"STUCK_THRESHOLD\\\\|responseCheck\\\\|check.*fullCheck\\\\|return NextResponse\" /Users/yonatanori/ai-marketplace/app/api/listings/[id]/check/route.ts)",
+      "Bash(node test-anthropic.mjs)",
+      "Bash(grep -rn \"ANTHROPIC_API_KEY\\\\|OPENAI_API_KEY\" /Users/yonatanori/ai-marketplace/lib /Users/yonatanori/ai-marketplace/app --include=*.ts --include=*.tsx)",
+      "Bash(grep -v \"^$\")",
+      "Bash(ls /Users/yonatanori/ai-marketplace/app/api/listings/[id]/check/latest/)"
     ]
   }
 }
