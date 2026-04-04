@@ -1,8 +1,12 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Lazy-initialize so missing RESEND_API_KEY doesn't crash the build.
+// All email functions are best-effort; callers must handle errors.
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY ?? "missing");
+}
 
-const FROM = `${process.env.RESEND_FROM_NAME} <${process.env.RESEND_FROM_EMAIL}>`;
+const FROM = `${process.env.RESEND_FROM_NAME ?? "Vibe Code Market"} <${process.env.RESEND_FROM_EMAIL ?? "noreply@example.com"}>`;
 
 /**
  * Send a purchase receipt to the buyer.
@@ -22,7 +26,7 @@ export async function sendPurchaseReceipt({
   amountCents: number;
 }) {
   // TODO (Step 8): Replace with a proper HTML email template
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to,
     subject: `Your purchase: ${listingTitle} — Vibe Code Market`,
@@ -55,7 +59,7 @@ export async function sendNewReviewNotification({
   rating: number;
 }) {
   // TODO (Step 9): Replace with a proper HTML email template
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to,
     subject: `New ${rating}★ review on ${listingTitle} — Vibe Code Market`,
@@ -83,7 +87,7 @@ export async function sendCheckFlaggedNotification({
   const adminEmail = process.env.ADMIN_EMAIL;
   if (!adminEmail) return; // No admin email configured — skip silently
 
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to: adminEmail,
     subject: `[Action Required] Flagged listing: ${listingTitle} — Vibe Code Market`,
@@ -116,7 +120,7 @@ export async function sendWelcomeEmail({
   to: string;
   name: string;
 }) {
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to,
     subject: `Welcome to Vibe Code Market!`,

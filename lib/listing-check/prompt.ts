@@ -196,11 +196,11 @@ export const CHECK_TOOL: Anthropic.Tool = {
       },
 
       pricing_note: {
-        type: ["string", "null"],
+        type: "string",
         description:
           "One sentence pricing suggestion based on category and complexity. " +
           "Example: 'Similar automations in this category typically sell for $20–$45.' " +
-          "Use null if there is not enough information to make a useful suggestion.",
+          "Use the empty string if there is not enough information to make a useful suggestion.",
       },
     },
   },

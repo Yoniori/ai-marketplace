@@ -24,6 +24,10 @@
  *   404 — listing not found
  */
 
+// Never cache — always return the live DB state so the client never
+// sees a stale "running" row after the worker has finished.
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 
@@ -109,6 +113,48 @@ export async function GET(
       { error: "Failed to fetch check" },
       { status: 500 }
     );
+  }
+
+  // ── Hard-reset zombie "running" rows ─────────────────────────
+  // Any check stuck in "running" or "queued" for more than 5 minutes
+  // is a zombie from a crashed worker. Reset it to "failed" in the DB
+  // and return the updated row so the frontend shows the retry button
+  // instead of an infinite spinner.
+  const ZOMBIE_MS = 5 * 60 * 1000; // 5 minutes
+  if (
+    check &&
+    (check.status === "running" || check.status === "queued") &&
+    Date.now() - new Date(check.triggered_at).getTime() > ZOMBIE_MS
+  ) {
+    console.log(
+      "[GET /check/latest] Resetting zombie check:", check.id,
+      "| status:", check.status,
+      "| age:", Math.round((Date.now() - new Date(check.triggered_at).getTime()) / 1000) + "s"
+    );
+
+    await db
+      .from("listing_checks")
+      .update({
+        status:        "failed",
+        completed_at:  new Date().toISOString(),
+        error_message: "Check timed out and was automatically reset. Please try again.",
+      })
+      .eq("id", check.id);
+
+    // Also clear the listing's pending flag so POST /check is not blocked.
+    await db
+      .from("listings")
+      .update({ review_status: null })
+      .eq("id", id);
+
+    return NextResponse.json({
+      check: {
+        ...check,
+        status:        "failed",
+        completed_at:  new Date().toISOString(),
+        error_message: "Check timed out and was automatically reset. Please try again.",
+      },
+    });
   }
 
   return NextResponse.json({ check: check ?? null });

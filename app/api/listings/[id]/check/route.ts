@@ -113,10 +113,47 @@ export async function POST(
   }
 
   if (listing.review_status === "pending") {
-    return NextResponse.json(
-      { error: "A check is already in progress for this listing" },
-      { status: 409 }
+    // Auto-unstick: if the latest "running" check is older than 90s it has
+    // almost certainly crashed without cleaning up. Reset it so the creator
+    // can retry instead of being permanently blocked.
+    const STUCK_MS = 5 * 60 * 1000; // 5 minutes — matches GET /check/latest zombie threshold
+    const { data: stuckCheck } = await db
+      .from("listing_checks")
+      .select("id, triggered_at, status")
+      .eq("listing_id", id)
+      .in("status", ["running", "queued"])
+      .order("triggered_at", { ascending: false })
+      .limit(1)
+      .single();
+
+    const isStuck =
+      stuckCheck &&
+      Date.now() - new Date(stuckCheck.triggered_at).getTime() > STUCK_MS;
+
+    if (!isStuck) {
+      return NextResponse.json(
+        { error: "A check is already in progress for this listing" },
+        { status: 409 }
+      );
+    }
+
+    // Reset the stuck check row and clear the listing's pending flag.
+    console.log(
+      "[POST /check] Auto-resetting stuck check:",
+      stuckCheck.id,
+      "age:",
+      Math.round((Date.now() - new Date(stuckCheck.triggered_at).getTime()) / 1000) + "s"
     );
+    await db
+      .from("listing_checks")
+      .update({
+        status: "failed",
+        completed_at: new Date().toISOString(),
+        error_message: "Check timed out and was automatically reset.",
+      })
+      .eq("id", stuckCheck.id);
+    await db.from("listings").update({ review_status: null }).eq("id", id);
+    // Fall through to start a fresh check.
   }
 
   // ── Validate minimum required fields ──────────────────────────
@@ -211,6 +248,21 @@ export async function POST(
       .eq("id", check.id)
       .single();
 
+    // ── Debug: log what we're sending back to the frontend ───────
+    console.log(
+      "[POST /check] finalCheck from DB:",
+      finalCheck
+        ? JSON.stringify({
+            id:               finalCheck.id,
+            status:           finalCheck.status,
+            outcome:          finalCheck.outcome,
+            overall_score:    finalCheck.overall_score,
+            error_message:    finalCheck.error_message,
+            report_is_object: typeof finalCheck.report === "object" && finalCheck.report !== null,
+          })
+        : "null — falling back to in-memory report"
+    );
+
     // If the re-read somehow fails (should never happen), fall back to
     // constructing the shape from the in-memory report so the client still
     // gets a usable response.
@@ -226,7 +278,7 @@ export async function POST(
       overall_score: report.overall_score,
       report,
       files_analyzed: null,
-      model_used: "claude-3-5-sonnet-latest",
+      model_used: "gpt-4o-mini",
       duration_ms: null,
       error_message: null,
     };

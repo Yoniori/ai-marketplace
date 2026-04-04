@@ -55,7 +55,7 @@ export interface CheckReport {
   summary: string;            // one sentence
   flags: Flag[];
   improvements: Improvement[];
-  pricing_note: string | null;
+  pricing_note: string;
 }
 
 // ── Ingestion ─────────────────────────────────────────────────
