@@ -45,35 +45,67 @@ export async function POST(
 ) {
   const { id } = await params;
 
-  // ── Production env audit (logged on every request) ───────────
-  // Shows in Vercel Dashboard → Logs. Never logs actual key values.
-  console.log("[POST /check] ENV AUDIT", {
-    NEXT_PUBLIC_SUPABASE_URL:    !!process.env.NEXT_PUBLIC_SUPABASE_URL,
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    SUPABASE_SERVICE_ROLE_KEY:   !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-    OPENAI_API_KEY:              !!process.env.OPENAI_API_KEY,
-    NODE_ENV:                    process.env.NODE_ENV,
+  // ── CHECKPOINT 1: env variables ──────────────────────────────
+  // Logs true/false for presence, and first 22 chars of each key so you can
+  // verify the correct key was pasted (all Supabase JWTs start with
+  // "eyJhbGciOiJIUzI1NiIs" — if you see something different, the wrong key
+  // was used). Safe to log: the JWT header is always the same string.
+  const svcKey  = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
+  const oaiKey  = process.env.OPENAI_API_KEY ?? "";
+  console.log("[POST /check] CHECKPOINT 1 — env", {
+    NEXT_PUBLIC_SUPABASE_URL:      process.env.NEXT_PUBLIC_SUPABASE_URL ?? "MISSING",
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: anonKey  ? anonKey.slice(0, 22)  + "…" : "MISSING",
+    SUPABASE_SERVICE_ROLE_KEY:     svcKey   ? svcKey.slice(0, 22)   + "…" : "MISSING",
+    OPENAI_API_KEY:                oaiKey   ? oaiKey.slice(0, 10)   + "…" : "MISSING",
+    svcKey_length:                 svcKey.length,
+    NODE_ENV:                      process.env.NODE_ENV,
   });
 
-  // ── Auth ─────────────────────────────────────────────────────
-  const userClient = await createClient();
+  if (!svcKey) {
+    console.error("[POST /check] FATAL: SUPABASE_SERVICE_ROLE_KEY is empty. Add it in Vercel → Settings → Environment Variables and redeploy.");
+    return NextResponse.json(
+      { error: "Server misconfiguration: missing service key. Contact support." },
+      { status: 500 }
+    );
+  }
+  if (!oaiKey) {
+    console.error("[POST /check] FATAL: OPENAI_API_KEY is empty. Add it in Vercel → Settings → Environment Variables and redeploy.");
+    return NextResponse.json(
+      { error: "Server misconfiguration: missing AI key. Contact support." },
+      { status: 500 }
+    );
+  }
+
+  // ── CHECKPOINT 2: auth ────────────────────────────────────────
+  console.log("[POST /check] CHECKPOINT 2 — calling createClient for auth…");
+  let userClient: Awaited<ReturnType<typeof createClient>>;
+  try {
+    userClient = await createClient();
+  } catch (err) {
+    console.error("[POST /check] CHECKPOINT 2 FAILED — createClient threw:", err instanceof Error ? err.message : err);
+    return NextResponse.json({ error: "Auth service unavailable." }, { status: 500 });
+  }
+
   const {
     data: { user },
     error: authError,
   } = await userClient.auth.getUser();
 
+  console.log("[POST /check] CHECKPOINT 2 — auth result:", { userId: user?.id ?? null, authError: authError?.message ?? null });
+
   if (authError || !user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // ── Fetch listing ─────────────────────────────────────────────
-  // Use admin client so we can read listings at any status (draft, etc.)
-  // without being limited by the public-read-published RLS policy.
+  // ── CHECKPOINT 3: admin client ────────────────────────────────
+  console.log("[POST /check] CHECKPOINT 3 — calling createAdminClient…");
   let adminClient: Awaited<ReturnType<typeof createAdminClient>>;
   try {
     adminClient = await createAdminClient();
+    console.log("[POST /check] CHECKPOINT 3 — createAdminClient OK");
   } catch (err) {
-    console.error("[POST /check] Admin client unavailable:", err instanceof Error ? err.message : err);
+    console.error("[POST /check] CHECKPOINT 3 FAILED — createAdminClient threw:", err instanceof Error ? err.message : err);
     return NextResponse.json(
       { error: "Service temporarily unavailable. Please try again later." },
       { status: 500 }
@@ -86,6 +118,8 @@ export async function POST(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = adminClient as any;
 
+  // ── CHECKPOINT 4: fetch listing ──────────────────────────────
+  console.log("[POST /check] CHECKPOINT 4 — querying listing id:", id);
   const { data: listing, error: listingError } = await db
     .from("listings")
     .select(
@@ -106,8 +140,10 @@ export async function POST(
     .single();
 
   if (listingError || !listing) {
+    console.error("[POST /check] CHECKPOINT 4 FAILED — listing query:", listingError?.message ?? "no row returned");
     return NextResponse.json({ error: "Listing not found" }, { status: 404 });
   }
+  console.log("[POST /check] CHECKPOINT 4 — listing found, status:", listing.status, "| review_status:", listing.review_status);
 
   // ── Ownership guard ───────────────────────────────────────────
   if (listing.creator_id !== user.id) {
@@ -222,8 +258,11 @@ export async function POST(
     category_name: (listing.categories as { name: string } | null)?.name ?? null,
   };
 
+  // ── CHECKPOINT 5: worker ──────────────────────────────────────
+  console.log("[POST /check] CHECKPOINT 5 — starting runCheck. checkId:", check.id);
   try {
     const report = await runCheck(check.id, listingForCheck, adminClient);
+    console.log("[POST /check] CHECKPOINT 5 — runCheck completed. outcome:", report.outcome);
 
     // ── Update listing review_status ──────────────────────────
     await db
