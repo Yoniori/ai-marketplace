@@ -46,7 +46,19 @@
       "Bash(node test-anthropic.mjs)",
       "Bash(grep -rn \"ANTHROPIC_API_KEY\\\\|OPENAI_API_KEY\" /Users/yonatanori/ai-marketplace/lib /Users/yonatanori/ai-marketplace/app --include=*.ts --include=*.tsx)",
       "Bash(grep -v \"^$\")",
-      "Bash(ls /Users/yonatanori/ai-marketplace/app/api/listings/[id]/check/latest/)"
+      "Bash(ls /Users/yonatanori/ai-marketplace/app/api/listings/[id]/check/latest/)",
+      "WebSearch",
+      "WebFetch(domain:theresanaiforthat.com)",
+      "WebFetch(domain:www.futurepedia.io)",
+      "WebFetch(domain:www.producthunt.com)",
+      "WebFetch(domain:theainovice.tech)",
+      "WebFetch(domain:aiagentstore.ai)",
+      "WebFetch(domain:eztalks.com)",
+      "WebFetch(domain:www.insidr.ai)",
+      "WebFetch(domain:futuretools.io)",
+      "WebFetch(domain:topai.tools)",
+      "WebFetch(domain:www.lemonsqueezy.com)",
+      "WebFetch(domain:aiblewmymind.substack.com)"
     ]
   }
 }

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { PlatformOverview } from "@/components/sections/PlatformOverview";
+import { LaunchedToday } from "@/components/launch/LaunchedToday";
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -241,6 +242,9 @@ export default function HomePage() {
 
       {/* ── Platform overview ──────────────────────────────────────────────── */}
       <PlatformOverview />
+
+      {/* ── Launched Today ─────────────────────────────────────────────────── */}
+      <LaunchedToday />
 
       {/* ── Browse by category ─────────────────────────────────────────────── */}
       <section className="border-b border-cyan-400/10 bg-[#0e0e10]">

@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Globe, Github, Twitter, Settings } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { ListingCard } from "@/components/listing/ListingCard";
 import { getInitials, formatDate } from "@/lib/utils";
 import type { Metadata } from "next";
 import type { Tables } from "@/types/supabase";
@@ -62,6 +63,25 @@ export default async function PublicProfilePage({ params }: Props) {
   } = await supabase.auth.getUser();
 
   const isOwner = user?.id === profile.id;
+
+  // Fetch published listings for this creator
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: listingsData } = await (supabase as any)
+    .from("listings")
+    .select(
+      "id, slug, title, tagline, price_type, price_cents, currency, thumbnail_url, review_count, avg_rating, purchase_count, categories ( name )"
+    )
+    .eq("creator_id", profile.id)
+    .eq("status", "published")
+    .order("published_at", { ascending: false })
+    .limit(24);
+
+  const listings = (listingsData ?? []) as Array<{
+    id: string; slug: string; title: string; tagline: string;
+    price_type: "free" | "paid" | "contact"; price_cents: number; currency: string;
+    thumbnail_url: string | null; review_count: number; avg_rating: number;
+    purchase_count: number; categories: { name: string } | null;
+  }>;
 
   const displayName = profile.display_name ?? `@${profile.username}`;
   const initials    = getInitials(displayName);
@@ -166,24 +186,53 @@ export default async function PublicProfilePage({ params }: Props) {
           {/* ── Divider ── */}
           <div className="mt-10 border-t border-border" />
 
-          {/* ── Listings placeholder ── */}
+          {/* ── Listings ── */}
           <div className="mt-10">
-            <p className="overline mb-5">Products</p>
-            <div className="rounded-xl border border-dashed border-border py-14 text-center">
-              <p className="text-sm font-medium">No products yet.</p>
-              {isOwner ? (
-                <p className="mt-1.5 text-sm text-muted-foreground">
-                  <Link href="/dashboard/listings/new" className="text-primary hover:underline">
-                    Publish your first product
-                  </Link>{" "}
-                  to showcase it here.
-                </p>
-              ) : (
-                <p className="mt-1.5 text-sm text-muted-foreground">
-                  Check back later.
-                </p>
+            <p className="overline mb-5">
+              Products
+              {listings.length > 0 && (
+                <span className="ml-2 text-xs font-normal text-muted-foreground">
+                  ({listings.length})
+                </span>
               )}
-            </div>
+            </p>
+            {listings.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-border py-14 text-center">
+                <p className="text-sm font-medium">No products yet.</p>
+                {isOwner ? (
+                  <p className="mt-1.5 text-sm text-muted-foreground">
+                    <Link href="/dashboard/listings/new" className="text-primary hover:underline">
+                      Publish your first product
+                    </Link>{" "}
+                    to showcase it here.
+                  </p>
+                ) : (
+                  <p className="mt-1.5 text-sm text-muted-foreground">Check back later.</p>
+                )}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {listings.map((listing) => (
+                  <ListingCard
+                    key={listing.id}
+                    id={listing.id}
+                    slug={listing.slug}
+                    title={listing.title}
+                    tagline={listing.tagline}
+                    price_type={listing.price_type}
+                    price_cents={listing.price_cents}
+                    currency={listing.currency}
+                    thumbnail_url={listing.thumbnail_url}
+                    review_count={listing.review_count}
+                    avg_rating={Number(listing.avg_rating)}
+                    purchase_count={listing.purchase_count}
+                    category={listing.categories?.name}
+                    creator_display_name={displayName}
+                    creator_username={profile.username}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
         </div>

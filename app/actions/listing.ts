@@ -20,9 +20,13 @@ function slugify(title: string): string {
     .slice(0, 80);                        // cap at 80 chars so suffix fits in the column
 }
 
-/** 6-char alphanumeric suffix for collision resistance, e.g. "a3f9kz". */
+/** 6-char alphanumeric suffix for collision resistance, e.g. "a3f9kz".
+ *  Uses crypto.getRandomValues for uniform distribution. */
 function randomSuffix(): string {
-  return Math.random().toString(36).slice(2, 8);
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  const bytes = new Uint8Array(6);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => chars[b % chars.length]).join("");
 }
 
 /** Full slug: "my-cool-project-a3f9kz" */
@@ -79,8 +83,8 @@ export async function createListing(
   const priceRaw    = (formData.get("price_cents")  as string) || "0";
 
   if (!title) return { success: false, error: "Title is required." };
-  if (title.length > 120) return { success: false, error: "Title must be 120 characters or fewer." };
-  if (tagline && tagline.length > 200) return { success: false, error: "Tagline must be 200 characters or fewer." };
+  if (title.length > 100) return { success: false, error: "Title must be 100 characters or fewer." };
+  if (tagline && tagline.length > 120) return { success: false, error: "Tagline must be 120 characters or fewer." };
 
   const priceCents =
     priceType === "paid"
@@ -102,7 +106,7 @@ export async function createListing(
       creator_id:  user.id,
       slug:        generateSlug(title),   // e.g. "my-project-a3f9kz"
       title,
-      tagline,
+      tagline:     tagline || `${title} — vibe-coded product`,  // NOT NULL in DB
       description: description || `Draft listing: ${title}`,
       price_type:  priceType,
       price_cents: priceCents,

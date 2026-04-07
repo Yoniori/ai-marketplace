@@ -159,6 +159,38 @@ export type Database = {
           },
         ]
       }
+      launch_upvotes: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          listing_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          id?: string
+          listing_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          listing_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "launch_upvotes_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       listing_checks: {
         Row: {
           attempt_count: number
@@ -264,9 +296,46 @@ export type Database = {
           },
         ]
       }
+      listing_views: {
+        Row: {
+          id: string
+          listing_id: string
+          viewed_at: string
+          viewer_id: string | null
+        }
+        Insert: {
+          id?: string
+          listing_id: string
+          viewed_at?: string
+          viewer_id?: string | null
+        }
+        Update: {
+          id?: string
+          listing_id?: string
+          viewed_at?: string
+          viewer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_views_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_views_viewer_id_fkey"
+            columns: ["viewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       listings: {
         Row: {
           avg_rating: number
+          built_with: string[]
           category_id: number | null
           created_at: string
           creator_id: string
@@ -294,6 +363,7 @@ export type Database = {
         }
         Insert: {
           avg_rating?: number
+          built_with?: string[]
           category_id?: number | null
           created_at?: string
           creator_id: string
@@ -321,6 +391,7 @@ export type Database = {
         }
         Update: {
           avg_rating?: number
+          built_with?: string[]
           category_id?: number | null
           created_at?: string
           creator_id?: string

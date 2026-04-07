@@ -183,7 +183,7 @@ export default function NewListingPage() {
             name="title"
             type="text"
             required
-            maxLength={120}
+            maxLength={100}
             placeholder="My AI-powered thing"
             disabled={isPending}
             className={INPUT}
@@ -202,7 +202,7 @@ export default function NewListingPage() {
             id="tagline"
             name="tagline"
             type="text"
-            maxLength={200}
+            maxLength={120}
             placeholder="One sentence that sells it"
             disabled={isPending}
             className={INPUT}

@@ -1,9 +1,10 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { FindMyVibeDrawer } from "@/components/discover/FindMyVibeDrawer";
 
 /**
  * Shared layout for all public-facing marketing pages.
- * Includes the Navbar and Footer.
+ * Includes the Navbar, Footer, and the Find My Vibe AI assistant drawer.
  */
 export default function MarketingLayout({
   children,
@@ -15,6 +16,7 @@ export default function MarketingLayout({
       <Navbar />
       <main className="flex-1">{children}</main>
       <Footer />
+      <FindMyVibeDrawer />
     </div>
   );
 }

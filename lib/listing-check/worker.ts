@@ -74,7 +74,7 @@ export async function runCheck(
 
   console.log(
     "[listing-check/worker] Supabase URL:", supabaseUrl,
-    "| Service key starts with:", serviceKey.slice(0, 20) + "..."
+    "| Service key present:", serviceKey.length > 0
   );
 
   const db = createSupabaseClient(supabaseUrl, serviceKey, {

@@ -16,6 +16,9 @@ interface ListingCardProps {
   thumbnail_url?: string | null;
   creator_display_name?: string;
   creator_username?: string;
+  review_status?: string | null;
+  is_new?: boolean;
+  is_trending?: boolean;
 }
 
 /** Price badge colours keyed by price_type */
@@ -42,6 +45,7 @@ function formatPrice(cents: number, currency = "usd"): string {
  *   • Space Grotesk for title
  *   • JetBrains Mono for price, category, meta
  *   • Colour-coded price badge (green=free, cyan=paid, violet=contact)
+ *   • Social proof badges: Trending / New / Checked
  */
 export function ListingCard({
   slug,
@@ -54,8 +58,12 @@ export function ListingCard({
   avg_rating,
   review_count,
   purchase_count,
+  thumbnail_url,
   creator_display_name,
   creator_username,
+  review_status,
+  is_new,
+  is_trending,
 }: ListingCardProps) {
   const priceStyle = PRICE_STYLE[price_type] ?? PRICE_STYLE.paid;
   const priceLabel =
@@ -64,6 +72,37 @@ export function ListingCard({
       : price_type === "contact"
       ? "Contact"
       : formatPrice(price_cents, currency);
+
+  // Determine which status badge to show (at most one)
+  let statusBadge: React.ReactNode = null;
+  if (is_trending) {
+    statusBadge = (
+      <span
+        className="rounded-full px-2 py-0.5 font-mono text-[9px] font-semibold"
+        style={{ color: "#fb923c", border: "1px solid rgba(251,146,60,0.25)", background: "rgba(251,146,60,0.08)" }}
+      >
+        🔥 Trending
+      </span>
+    );
+  } else if (is_new) {
+    statusBadge = (
+      <span
+        className="rounded-full px-2 py-0.5 font-mono text-[9px] font-semibold"
+        style={{ color: "#bf81ff", border: "1px solid rgba(191,129,255,0.25)", background: "rgba(191,129,255,0.08)" }}
+      >
+        ✨ New
+      </span>
+    );
+  } else if (review_status === "ready") {
+    statusBadge = (
+      <span
+        className="rounded-full px-2 py-0.5 font-mono text-[9px] font-semibold"
+        style={{ color: "#00e6e6", border: "1px solid rgba(0,230,230,0.20)", background: "rgba(0,230,230,0.06)" }}
+      >
+        ✓ Checked
+      </span>
+    );
+  }
 
   return (
     <Link
@@ -85,21 +124,40 @@ export function ListingCard({
         }}
       />
 
+      {/* ── Thumbnail image ── */}
+      {thumbnail_url && (
+        <div className="overflow-hidden rounded-t-xl" style={{ aspectRatio: "16/9" }}>
+          <img
+            src={thumbnail_url}
+            alt={title}
+            loading="lazy"
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+          />
+        </div>
+      )}
+
       <div className="flex flex-1 flex-col gap-4 p-5">
 
-        {/* ── Category + price row ── */}
+        {/* ── Status badge + price row ── */}
         <div className="flex items-center justify-between gap-2">
-          {category ? (
-            <span className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant/60">
-              {category}
-            </span>
-          ) : (
-            <span />
-          )}
+          <div className="flex items-center gap-2 min-w-0">
+            {statusBadge}
+            {!statusBadge && category ? (
+              <span className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant/60">
+                {category}
+              </span>
+            ) : !statusBadge ? (
+              <span />
+            ) : category ? (
+              <span className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant/60 hidden">
+                {category}
+              </span>
+            ) : null}
+          </div>
 
           {/* Price badge */}
           <span
-            className="rounded-full px-2.5 py-1 font-mono text-[11px] font-semibold"
+            className="rounded-full px-2.5 py-1 font-mono text-[11px] font-semibold shrink-0"
             style={{
               color: priceStyle.color,
               border: `1px solid ${priceStyle.border}`,
@@ -140,7 +198,11 @@ export function ListingCard({
                   <span className="text-on-surface-variant/40">({review_count})</span>
                 </span>
               )}
-              {purchase_count != null && purchase_count > 0 && (
+              {(purchase_count == null || purchase_count === 0) ? (
+                <span className="font-mono text-[10px]" style={{ color: "rgba(0,230,230,0.40)" }}>
+                  Be first to buy
+                </span>
+              ) : (
                 <span className="font-mono text-[10px] text-on-surface-variant/40">
                   {purchase_count} sold
                 </span>

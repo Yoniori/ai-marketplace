@@ -7,6 +7,7 @@
  * URL params:
  *   ?q=<search term>          — full-text ilike on title + tagline
  *   ?category=<slug>          — filter by category slug
+ *   ?built_with=<tool>        — filter by tool used to build the listing
  */
 
 import { createClient }       from "@/lib/supabase/server";
@@ -40,13 +41,23 @@ type ListingRow = {
 // ── Page ─────────────────────────────────────────────────────────────────────
 
 interface BrowsePageProps {
-  searchParams: { q?: string; category?: string };
+  searchParams: { q?: string; category?: string; built_with?: string };
 }
 
 export default async function BrowsePage({ searchParams }: BrowsePageProps) {
   const supabase    = await createClient();
-  const rawQ        = searchParams.q?.trim() ?? "";
+  // Sanitize search input before use in PostgREST .or() filter string.
+  // Commas and parentheses are PostgREST OR-syntax delimiters; if left in
+  // the interpolated string they will break the filter and return wrong results.
+  // ILIKE wildcards % and _ are escaped so users searching for literal "50%"
+  // or "my_tool" match exactly, not as wildcard patterns.
+  const rawQ = searchParams.q?.trim() ?? "";
+  const safeQ = rawQ
+    .replace(/[%_]/g, "\\$&")   // escape ILIKE special chars
+    .replace(/[,()]/g, " ")     // replace PostgREST syntax chars with space
+    .trim();
   const categorySlug = searchParams.category ?? null;
+  const builtWith    = searchParams.built_with ?? null;
 
   // ── 1. Fetch categories (used for filter bar + resolving category_id) ──────
   const { data: categoriesData } = await supabase
@@ -92,11 +103,15 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
     query = query.eq("category_id", activeCategory.id);
   }
 
-  if (rawQ) {
-    // ilike search across title and tagline
+  if (safeQ) {
+    // ilike search across title and tagline (safeQ has PostgREST syntax chars stripped)
     query = query.or(
-      `title.ilike.%${rawQ}%,tagline.ilike.%${rawQ}%`,
+      `title.ilike.%${safeQ}%,tagline.ilike.%${safeQ}%`,
     );
+  }
+
+  if (builtWith) {
+    query = (query as any).contains("built_with", [builtWith]);
   }
 
   const { data: listingsData } = await query;
@@ -161,6 +176,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
             <BrowseFilters
               categories={categories}
               activeCategorySlug={categorySlug}
+              activeBuiltWith={builtWith}
               searchQuery={rawQ}
               totalCount={listings.length}
             />

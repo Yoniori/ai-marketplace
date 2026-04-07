@@ -31,9 +31,21 @@ export interface CategoryItem {
 interface BrowseFiltersProps {
   categories: CategoryItem[];
   activeCategorySlug: string | null;
+  activeBuiltWith: string | null;
   searchQuery: string;
   totalCount: number;
 }
+
+// ── Built With tools ─────────────────────────────────────────────────────────
+
+const TOOLS: { label: string; icon: string }[] = [
+  { label: "Claude Code", icon: "◆" },
+  { label: "Cursor",      icon: "⌫" },
+  { label: "Lovable",     icon: "♥" },
+  { label: "Bolt",        icon: "⚡" },
+  { label: "v0",          icon: "▲" },
+  { label: "Replit",      icon: "⬡" },
+];
 
 // ── Style helpers ────────────────────────────────────────────────────────────
 
@@ -55,6 +67,7 @@ const pillIdle = {
 export function BrowseFilters({
   categories,
   activeCategorySlug,
+  activeBuiltWith,
   searchQuery,
   totalCount,
 }: BrowseFiltersProps) {
@@ -67,12 +80,13 @@ export function BrowseFilters({
   // Keep input in sync if the user navigates back/forward
   useEffect(() => { setInputValue(searchQuery); }, [searchQuery]);
 
-  // Build a clean href from the two filter dimensions
+  // Build a clean href from the three filter dimensions
   const buildHref = useCallback(
-    (q: string | undefined, category: string | null) => {
+    (q: string | undefined, category: string | null, builtWith: string | null) => {
       const sp = new URLSearchParams();
-      if (q?.trim())  sp.set("q", q.trim());
-      if (category)   sp.set("category", category);
+      if (q?.trim())   sp.set("q", q.trim());
+      if (category)    sp.set("category", category);
+      if (builtWith)   sp.set("built_with", builtWith);
       const qs = sp.toString();
       return qs ? `${pathname}?${qs}` : pathname;
     },
@@ -84,17 +98,23 @@ export function BrowseFilters({
     if (isFirstRender.current) { isFirstRender.current = false; return; }
     const timer = setTimeout(() => {
       startTransition(() => {
-        router.push(buildHref(inputValue, activeCategorySlug));
+        router.push(buildHref(inputValue, activeCategorySlug, activeBuiltWith));
       });
     }, 350);
     return () => clearTimeout(timer);
-    // activeCategorySlug intentionally omitted — category changes are instant
+    // activeCategorySlug / activeBuiltWith intentionally omitted — their changes are instant
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inputValue]);
 
   const handleCategory = (slug: string | null) => {
     startTransition(() => {
-      router.push(buildHref(inputValue, slug));
+      router.push(buildHref(inputValue, slug, activeBuiltWith));
+    });
+  };
+
+  const handleBuiltWith = (tool: string | null) => {
+    startTransition(() => {
+      router.push(buildHref(inputValue, activeCategorySlug, tool));
     });
   };
 
@@ -159,6 +179,38 @@ export function BrowseFilters({
             >
               {cat.icon ? `${cat.icon} ` : ""}
               {cat.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Built With pills ────────────────────────────────────────────── */}
+      <div>
+        <div className="mb-3 flex items-center gap-2">
+          <SlidersHorizontal className="h-3 w-3 text-on-surface-variant/40" />
+          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-on-surface-variant/50">
+            Built With
+          </span>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {/* "All" pill */}
+          <button
+            onClick={() => handleBuiltWith(null)}
+            className="rounded-full px-3.5 py-1.5 font-mono text-[11px] font-semibold transition-all duration-200 hover:scale-[1.03] active:scale-[0.97]"
+            style={activeBuiltWith === null ? pillActive : pillIdle}
+          >
+            All
+          </button>
+
+          {TOOLS.map((tool) => (
+            <button
+              key={tool.label}
+              onClick={() => handleBuiltWith(tool.label)}
+              className="rounded-full px-3.5 py-1.5 font-mono text-[11px] font-semibold transition-all duration-200 hover:scale-[1.03] active:scale-[0.97]"
+              style={activeBuiltWith === tool.label ? pillActive : pillIdle}
+            >
+              {tool.icon} {tool.label}
             </button>
           ))}
         </div>
