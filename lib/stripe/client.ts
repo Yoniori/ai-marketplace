@@ -1,7 +1,7 @@
 import Stripe from "stripe";
 
 /**
- * Validates a required server-side env var at module load time.
+ * Validates a required server-side env var.
  * Throws a clear, actionable error instead of a cryptic undefined crash.
  */
 function requireEnv(name: string): string {
@@ -16,15 +16,32 @@ function requireEnv(name: string): string {
 }
 
 /**
- * Server-side Stripe client.
+ * Server-side Stripe client — lazily initialized.
  * Use only in API routes, Server Actions, and webhook handlers.
  *
- * Throws at module load time if STRIPE_SECRET_KEY is missing so the error
- * surfaces immediately (build/startup) rather than at the first payment call.
+ * Initialization is deferred to first use so that the build succeeds even
+ * when STRIPE_SECRET_KEY is not present in the build environment. The error
+ * surfaces at runtime when a payment endpoint is actually called.
  */
-export const stripe = new Stripe(requireEnv("STRIPE_SECRET_KEY"), {
-  apiVersion: "2024-04-10",
-  typescript: true,
+let _stripe: Stripe | null = null;
+
+function getStripe(): Stripe {
+  if (!_stripe) {
+    _stripe = new Stripe(requireEnv("STRIPE_SECRET_KEY"), {
+      apiVersion: "2024-04-10",
+      typescript: true,
+    });
+  }
+  return _stripe;
+}
+
+// Proxy keeps the `stripe` export signature unchanged so no callers need updating.
+export const stripe: Stripe = new Proxy({} as Stripe, {
+  get(_target, prop: string | symbol) {
+    const instance = getStripe();
+    const value = (instance as unknown as Record<string | symbol, unknown>)[prop];
+    return typeof value === "function" ? (value as Function).bind(instance) : value;
+  },
 });
 
 /**
