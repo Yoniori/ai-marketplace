@@ -1,9 +1,12 @@
 /**
- * QualityBadge — Displays Gatekeeper AI quality scores.
+ * QualityBadge — Gatekeeper quality scores in editorial style.
  *
  * Two variants:
- *   compact — circular score badge for cards/hero
- *   full    — full breakdown card for listing detail page
+ *   compact — physical dial arc (terracotta/forest/ink) for cards
+ *   full    — score breakdown panel for listing detail page
+ *
+ * Design: feels like a physical instrument dial, not a neon HUD.
+ * No glows, no gradients — clean ink + earthy accent palette.
  */
 
 interface QualityBadgeProps {
@@ -16,14 +19,15 @@ interface QualityBadgeProps {
 }
 
 function scoreColor(score: number): string {
-  if (score >= 8) return "#00e6e6";
-  if (score >= 6) return "#f59e0b";
-  return "#ef4444";
+  if (score >= 8) return "#2D4739";   // forest — excellent
+  if (score >= 6) return "#B89F6E";   // gold — acceptable
+  return "#C05A44";                    // terracotta — needs work
 }
 
 function ScoreCircle({ score, size = 44 }: { score: number; size?: number }) {
   const color = scoreColor(score);
-  const radius = (size - 4) / 2; // subtract border width
+  const strokeWidth = size >= 64 ? 3 : 2;
+  const radius = (size - strokeWidth * 2) / 2;
   const circumference = 2 * Math.PI * radius;
   const pct = Math.min(score / 10, 1);
   const dash = circumference * pct;
@@ -31,30 +35,30 @@ function ScoreCircle({ score, size = 44 }: { score: number; size?: number }) {
   const center = size / 2;
 
   return (
-    <div className="flex flex-col items-center gap-0.5">
+    <div className="flex flex-col items-center gap-1">
       <div style={{ position: "relative", width: size, height: size }}>
         <svg
           width={size}
           height={size}
           style={{ position: "absolute", top: 0, left: 0, transform: "rotate(-90deg)" }}
         >
-          {/* Track */}
+          {/* Track — warm paper tone */}
           <circle
             cx={center}
             cy={center}
             r={radius}
             fill="none"
-            stroke="rgba(255,255,255,0.06)"
-            strokeWidth={2}
+            stroke="rgba(15,15,15,0.08)"
+            strokeWidth={strokeWidth}
           />
-          {/* Fill */}
+          {/* Fill — earthy color */}
           <circle
             cx={center}
             cy={center}
             r={radius}
             fill="none"
             stroke={color}
-            strokeWidth={2}
+            strokeWidth={strokeWidth}
             strokeDasharray={`${dash} ${gap}`}
             strokeLinecap="round"
           />
@@ -69,18 +73,29 @@ function ScoreCircle({ score, size = 44 }: { score: number; size?: number }) {
           }}
         >
           <span
-            className="font-mono font-bold"
-            style={{ fontSize: size >= 44 ? "0.65rem" : "0.55rem", color }}
+            style={{
+              fontFamily: "var(--font-mono, monospace)",
+              fontSize: size >= 56 ? "0.75rem" : "0.6rem",
+              fontWeight: 700,
+              color: "#0F0F0F",
+              lineHeight: 1,
+            }}
           >
             {score.toFixed(score % 1 === 0 ? 0 : 1)}
           </span>
         </div>
       </div>
       <span
-        className="font-mono uppercase tracking-widest"
-        style={{ fontSize: "0.5rem", color: "rgba(255,255,255,0.40)" }}
+        style={{
+          fontFamily: "var(--font-sans, sans-serif)",
+          fontSize: "0.5rem",
+          fontWeight: 600,
+          letterSpacing: "0.1em",
+          textTransform: "uppercase",
+          color: "#9B9690",
+        }}
       >
-        AI Checked
+        Score
       </span>
     </div>
   );
@@ -93,18 +108,43 @@ function ScoreBar({ label, score }: { label: string; score: number }) {
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between">
-        <span className="font-mono text-[10px] text-white/50 uppercase tracking-wider">{label}</span>
-        <span className="font-mono text-[10px] font-semibold" style={{ color }}>
+        <span
+          style={{
+            fontFamily: "var(--font-sans, sans-serif)",
+            fontSize: "0.6875rem",
+            color: "#6B6860",
+          }}
+        >
+          {label}
+        </span>
+        <span
+          style={{
+            fontFamily: "var(--font-mono, monospace)",
+            fontSize: "0.6875rem",
+            fontWeight: 600,
+            color,
+          }}
+        >
           {score}/10
         </span>
       </div>
+      {/* Track */}
       <div
-        className="rounded-full overflow-hidden"
-        style={{ height: 4, background: "rgba(255,255,255,0.06)" }}
+        style={{
+          height: 3,
+          borderRadius: 2,
+          background: "rgba(15,15,15,0.07)",
+          overflow: "hidden",
+        }}
       >
         <div
-          className="h-full rounded-full transition-all duration-500"
-          style={{ width: `${pct}%`, background: color }}
+          style={{
+            width: `${pct}%`,
+            height: "100%",
+            borderRadius: 2,
+            background: color,
+            transition: "width 0.5s ease",
+          }}
         />
       </div>
     </div>
@@ -124,32 +164,44 @@ export function QualityBadge({
 
   // Full variant
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       {/* Header row */}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          {/* Shield icon */}
+          {/* Verification mark — clean ink shield */}
           <svg
-            width="16"
-            height="16"
+            width="15"
+            height="15"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="#00e6e6"
-            strokeWidth="2"
+            stroke="#6B6860"
+            strokeWidth="1.75"
             strokeLinecap="round"
             strokeLinejoin="round"
           >
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
           </svg>
-          <span className="font-mono text-[11px] font-semibold uppercase tracking-wider text-white/70">
-            Gatekeeper Quality Report
+          <span
+            style={{
+              fontFamily: "var(--font-sans, sans-serif)",
+              fontSize: "0.6875rem",
+              fontWeight: 600,
+              color: "#6B6860",
+              textTransform: "uppercase",
+              letterSpacing: "0.10em",
+            }}
+          >
+            Quality Report
           </span>
         </div>
-        <ScoreCircle score={overallScore} size={44} />
+        <ScoreCircle score={overallScore} size={52} />
       </div>
 
+      {/* Divider */}
+      <div style={{ height: "0.5px", background: "rgba(15,15,15,0.09)" }} />
+
       {/* Score breakdown */}
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3.5">
         <ScoreBar label="Security" score={securityScore} />
         <ScoreBar label="Completeness" score={completenessScore} />
         <ScoreBar label="Clarity" score={clarityScore} />
@@ -157,10 +209,15 @@ export function QualityBadge({
 
       {/* Disclaimer */}
       <p
-        className="font-mono text-[10px] text-center"
-        style={{ color: "rgba(255,255,255,0.25)" }}
+        style={{
+          fontFamily: "var(--font-sans, sans-serif)",
+          fontSize: "0.625rem",
+          color: "#9B9690",
+          textAlign: "center",
+          fontStyle: "italic",
+        }}
       >
-        Automated analysis · Not a security audit
+        Automated analysis — not a security audit
       </p>
     </div>
   );

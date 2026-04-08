@@ -53,57 +53,45 @@ const config: Config = {
           foreground: "hsl(var(--card-foreground))",
         },
 
-        // ── Stitch / Material-3 design tokens (from Vibe Code Market Stitch design)
-        // NOTE: `primary`, `secondary`, and `background` are intentionally excluded
-        // here — they live above as CSS-variable-based tokens for shadcn/ui compat.
-        "inverse-surface":            "#fcf8fb",
-        "on-tertiary-fixed":          "#003e03",
-        "tertiary":                   "#69fd5d",
-        "secondary-fixed-dim":        "#dab4ff",
-        "on-secondary":               "#32005c",
-        "on-surface":                 "#f9f5f8",
-        "on-tertiary":                "#005e07",
-        "inverse-primary":            "#006a6a",
-        "inverse-on-surface":         "#565457",
-        "on-surface-variant":         "#adaaad",
-        "on-tertiary-container":      "#005406",
-        "surface-tint":               "#c1fffe",
-        "primary-fixed-dim":          "#00e6e6",
-        "on-secondary-fixed":         "#4e008a",
-        "surface-variant":            "#262528",
-        "on-error-container":         "#ffa8a3",
-        "on-error":                   "#490006",
-        "on-primary-fixed-variant":   "#006262",
-        "on-background":              "#f9f5f8",
-        "surface-dim":                "#0e0e10",
-        "error-dim":                  "#d7383b",
-        "surface-container-highest":  "#262528",
-        "primary-fixed":              "#00f5f5",
-        "surface":                    "#0e0e10",
-        "surface-container-lowest":   "#000000",
-        "tertiary-container":         "#59ee50",
-        "primary-container":          "#00ffff",
-        "outline-variant":            "#48474a",
-        "tertiary-dim":               "#49e043",
-        "on-primary":                 "#006767",
-        "outline":                    "#767577",
-        "secondary-fixed":            "#e4c6ff",
-        "secondary-container":        "#7701d0",
-        "error-container":            "#9f0519",
-        "secondary-dim":              "#9c42f4",
-        "primary-dim":                "#00e6e6",
-        "error":                      "#ff716c",
-        "tertiary-fixed-dim":         "#49e043",
-        "on-secondary-fixed-variant": "#7500cc",
-        "on-primary-fixed":           "#004343",
-        "on-tertiary-fixed-variant":  "#005f07",
-        "surface-bright":             "#2c2c2f",
-        "tertiary-fixed":             "#59ee50",
-        "on-primary-container":       "#005d5d",
-        "on-secondary-container":     "#f0dcff",
-        "surface-container-low":      "#131315",
-        "surface-container":          "#19191c",
-        "surface-container-high":     "#1f1f22",
+        // ── Editorial Luxury design tokens ─────────────────────────────────
+        // Earthy palette replacing the neon-dark Stitch system
+
+        // Terracotta — primary accent
+        "terra":         "#C05A44",
+        "terra-light":   "#E8836F",
+        "terra-muted":   "rgba(192,90,68,0.12)",
+
+        // Forest Green — secondary accent
+        "forest":        "#2D4739",
+        "forest-light":  "#3D6150",
+        "forest-muted":  "rgba(45,71,57,0.10)",
+
+        // Muted Gold — tertiary accent
+        "gold":          "#B89F6E",
+        "gold-muted":    "rgba(184,159,110,0.15)",
+
+        // Ink scale
+        "ink":           "#0F0F0F",
+        "ink-secondary": "#6B6860",
+        "ink-tertiary":  "#9B9690",
+        "ink-faint":     "rgba(15,15,15,0.35)",
+
+        // Surfaces
+        "surface":       "#FDFCFB",
+        "surface-warm":  "#F5F3F0",
+        "surface-card":  "#FFFFFF",
+
+        // Borders
+        "hairline":      "rgba(15,15,15,0.09)",
+        "hairline-mid":  "rgba(15,15,15,0.15)",
+
+        // Legacy compatibility aliases (used by dashboard, auth pages etc.)
+        "on-surface":          "#0F0F0F",
+        "on-surface-variant":  "#6B6860",
+        "outline-variant":     "rgba(15,15,15,0.12)",
+        "surface-container":   "#F5F3F0",
+        "error":               "#C0392B",
+        "tertiary":            "#2D4739",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -111,32 +99,44 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        // --font-sans is injected by the Inter setup in app/layout.tsx
+        // Inter — body and UI
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
-        // Space Grotesk — loaded via layout.tsx as --font-headline
-        headline: ["var(--font-headline)", "Space Grotesk", "system-ui", "sans-serif"],
-        label:    ["var(--font-headline)", "Space Grotesk", "system-ui", "sans-serif"],
-        // JetBrains Mono — loaded via layout.tsx as --font-mono
+        body: ["var(--font-sans)", "system-ui", "sans-serif"],
+        // Playfair Display — editorial headlines
+        headline: ["var(--font-headline)", "Playfair Display", "Georgia", "serif"],
+        label:    ["var(--font-sans)", "system-ui", "sans-serif"],
+        // JetBrains Mono — code and labels
         mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "monospace"],
       },
       keyframes: {
         "accordion-down": {
           from: { height: "0" },
-          to: { height: "var(--radix-accordion-content-height)" },
+          to:   { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
           from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
+          to:   { height: "0" },
         },
         "enter": {
-          from: { opacity: "0", transform: "translateY(6px)" },
+          from: { opacity: "0", transform: "translateY(4px)" },
           to:   { opacity: "1", transform: "translateY(0)" },
+        },
+        "fade-in": {
+          from: { opacity: "0" },
+          to:   { opacity: "1" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up":   "accordion-up 0.2s ease-out",
-        "enter":          "enter 0.3s ease-out",
+        "enter":          "enter 0.25s ease-out",
+        "fade-in":        "fade-in 0.2s ease-out",
+      },
+      boxShadow: {
+        // Editorial soft shadows
+        "card":  "0 1px 3px rgba(15,15,15,0.06), 0 1px 2px rgba(15,15,15,0.04)",
+        "card-hover": "0 4px 16px rgba(15,15,15,0.10), 0 1px 4px rgba(15,15,15,0.06)",
+        "float": "0 8px 32px rgba(15,15,15,0.12), 0 2px 8px rgba(15,15,15,0.06)",
       },
     },
   },

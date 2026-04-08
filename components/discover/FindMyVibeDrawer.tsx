@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Sparkles, X, Send, Loader2 } from "lucide-react";
+import { Search, X, Send, Loader2 } from "lucide-react";
 
 interface Message {
   role: "user" | "assistant";
@@ -14,7 +14,7 @@ export function FindMyVibeDrawer() {
     {
       role: "assistant",
       content:
-        "Hey! Tell me what you're trying to build or automate, and I'll find the right tool for you. ✨",
+        "Tell me what you're trying to build or automate, and I'll find the right tool for you.",
     },
   ]);
   const [input, setInput] = useState("");
@@ -56,23 +56,25 @@ export function FindMyVibeDrawer() {
 
   return (
     <>
-      {/* Floating trigger button */}
+      {/* Floating trigger button — terracotta, no gradient, no glow */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-40 flex h-14 w-14 items-center justify-center rounded-full shadow-2xl transition-all duration-200 hover:scale-105 active:scale-95"
+        className="fixed bottom-6 right-6 z-40 flex items-center justify-center rounded-full transition-all duration-150 hover:bg-[#A84D39] active:scale-[0.97]"
         style={{
-          background: "linear-gradient(135deg, #00e6e6, #9c42f4)",
-          boxShadow: "0 0 32px rgba(0,230,230,0.40), 0 4px 20px rgba(0,0,0,0.6)",
+          width: "3.25rem",
+          height: "3.25rem",
+          background: "#C05A44",
+          boxShadow: "0 4px 16px rgba(192,90,68,0.28), 0 1px 4px rgba(15,15,15,0.10)",
         }}
-        aria-label="Find My Vibe — AI product assistant"
+        aria-label="Find a product — AI assistant"
       >
-        <Sparkles className="h-6 w-6 text-[#0e0e10]" />
+        <Search className="h-5 w-5 text-white" />
       </button>
 
       {/* Backdrop */}
       {open && (
         <div
-          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[2px]"
+          className="fixed inset-0 z-40 bg-black/20"
           onClick={() => setOpen(false)}
         />
       )}
@@ -82,43 +84,40 @@ export function FindMyVibeDrawer() {
         className="fixed bottom-0 right-0 z-50 flex flex-col"
         style={{
           width: "min(420px, 100vw)",
-          height: "min(580px, 90vh)",
-          background: "rgba(14,14,16,0.97)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          border: "1px solid rgba(0,255,255,0.18)",
-          borderBottomWidth: 0,
-          borderRightWidth: 0,
-          borderRadius: "16px 0 0 0",
+          height: "min(560px, 90vh)",
+          background: "#FFFFFF",
+          borderTop: "0.5px solid rgba(15,15,15,0.10)",
+          borderLeft: "0.5px solid rgba(15,15,15,0.10)",
+          borderRadius: "12px 0 0 0",
+          boxShadow: "0 -8px 48px rgba(15,15,15,0.12), -2px 0 16px rgba(15,15,15,0.04)",
           transform: open ? "translateY(0)" : "translateY(100%)",
-          transition: "transform 0.28s cubic-bezier(0.32,0,0.67,0)",
-          boxShadow: "0 -8px 64px rgba(0,0,0,0.6)",
+          transition: "transform 0.26s cubic-bezier(0.32,0,0.67,0)",
         }}
       >
         {/* Header */}
         <div
-          className="flex items-center justify-between border-b px-5 py-4"
-          style={{ borderColor: "rgba(0,255,255,0.12)" }}
+          className="flex items-center justify-between px-5 py-4"
+          style={{ borderBottom: "0.5px solid rgba(15,15,15,0.09)" }}
         >
           <div className="flex items-center gap-2.5">
             <div
               className="flex h-7 w-7 items-center justify-center rounded-lg"
-              style={{ background: "linear-gradient(135deg, #00e6e6, #9c42f4)" }}
+              style={{ background: "#C05A44" }}
             >
-              <Sparkles className="h-3.5 w-3.5 text-[#0e0e10]" />
+              <Search className="h-3.5 w-3.5 text-white" />
             </div>
             <div>
-              <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-cyan-400">
+              <p className="text-[12px] font-semibold text-[#0F0F0F]">
                 Find My Vibe
               </p>
-              <p className="font-mono text-[9px] text-on-surface-variant/50">
-                AI product assistant
+              <p className="text-[10px] text-[#9B9690]">
+                Product assistant
               </p>
             </div>
           </div>
           <button
             onClick={() => setOpen(false)}
-            className="text-on-surface-variant/50 hover:text-white transition-colors"
+            className="text-[#9B9690] transition-colors duration-150 hover:text-[#0F0F0F]"
           >
             <X className="h-4 w-4" />
           </button>
@@ -132,23 +131,20 @@ export function FindMyVibeDrawer() {
               className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
             >
               <div
-                className="max-w-[82%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed"
+                className="max-w-[82%] rounded-xl px-4 py-2.5 text-sm leading-relaxed"
                 style={
                   msg.role === "user"
                     ? {
-                        background:
-                          "linear-gradient(135deg, rgba(0,230,230,0.18), rgba(156,66,244,0.18))",
-                        border: "1px solid rgba(0,255,255,0.20)",
-                        color: "#e8e6e8",
+                        background: "#C05A44",
+                        color: "#FFFFFF",
                       }
                     : {
-                        background: "rgba(255,255,255,0.04)",
-                        border: "1px solid rgba(72,71,74,0.35)",
-                        color: "#b0adb0",
+                        background: "#F5F3F0",
+                        border: "0.5px solid rgba(15,15,15,0.09)",
+                        color: "#0F0F0F",
                       }
                 }
               >
-                {/* Render basic markdown bold as <strong> */}
                 <span
                   dangerouslySetInnerHTML={{
                     __html: msg.content
@@ -157,7 +153,7 @@ export function FindMyVibeDrawer() {
                       .replace(/>/g, "&gt;")
                       .replace(
                         /\*\*\[(.+?)\]\((.+?)\)\*\*/g,
-                        '<a href="$2" style="color:#00e6e6;text-decoration:underline;text-underline-offset:2px" target="_blank">$1</a>',
+                        '<a href="$2" style="color:#C05A44;text-decoration:underline;text-underline-offset:2px" target="_blank">$1</a>',
                       )
                       .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
                       .replace(/\n/g, "<br />"),
@@ -169,16 +165,14 @@ export function FindMyVibeDrawer() {
           {loading && (
             <div className="flex justify-start">
               <div
-                className="flex items-center gap-2 rounded-2xl px-4 py-2.5"
+                className="flex items-center gap-2 rounded-xl px-4 py-2.5"
                 style={{
-                  background: "rgba(255,255,255,0.04)",
-                  border: "1px solid rgba(72,71,74,0.35)",
+                  background: "#F5F3F0",
+                  border: "0.5px solid rgba(15,15,15,0.09)",
                 }}
               >
-                <Loader2 className="h-3.5 w-3.5 animate-spin text-cyan-400/60" />
-                <span className="font-mono text-[11px] text-on-surface-variant/50">
-                  Finding…
-                </span>
+                <Loader2 className="h-3.5 w-3.5 animate-spin text-[#9B9690]" />
+                <span className="text-[11px] text-[#9B9690]">Finding…</span>
               </div>
             </div>
           )}
@@ -187,14 +181,14 @@ export function FindMyVibeDrawer() {
 
         {/* Input */}
         <div
-          className="border-t px-4 py-3"
-          style={{ borderColor: "rgba(0,255,255,0.10)" }}
+          className="px-4 py-3"
+          style={{ borderTop: "0.5px solid rgba(15,15,15,0.09)" }}
         >
           <div
-            className="flex items-center gap-2 rounded-xl px-4 py-2.5"
+            className="flex items-center gap-2 rounded-lg px-4 py-2.5"
             style={{
-              background: "rgba(25,25,28,0.80)",
-              border: "1px solid rgba(72,71,74,0.50)",
+              background: "#F5F3F0",
+              border: "0.5px solid rgba(15,15,15,0.12)",
             }}
           >
             <input
@@ -203,15 +197,17 @@ export function FindMyVibeDrawer() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
               placeholder="e.g. I need a Notion automation…"
-              className="flex-1 bg-transparent text-sm text-white/90 placeholder:text-on-surface-variant/35 outline-none font-body"
+              className="flex-1 bg-transparent text-sm text-[#0F0F0F] placeholder:text-[#9B9690] outline-none"
             />
             <button
               onClick={handleSend}
               disabled={!input.trim() || loading}
-              className="flex h-7 w-7 items-center justify-center rounded-lg transition-all disabled:opacity-30"
-              style={{ background: "linear-gradient(135deg, #00e6e6, #9c42f4)" }}
+              className="flex h-7 w-7 items-center justify-center rounded-md transition-all duration-150 disabled:opacity-30 active:scale-[0.96]"
+              style={{ background: "#C05A44" }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#A84D39")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "#C05A44")}
             >
-              <Send className="h-3.5 w-3.5 text-[#0e0e10]" />
+              <Send className="h-3.5 w-3.5 text-white" />
             </button>
           </div>
         </div>

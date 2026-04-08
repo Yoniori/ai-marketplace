@@ -1,18 +1,12 @@
 "use client";
 
 /**
- * BrowseFilters
- *
- * Client component that owns:
- *   • Debounced search input  (350 ms) → pushes ?q= to the URL
- *   • Category pill buttons   → pushes ?category= to the URL
- *
- * Data is received as props from the parent Server Component so we never
- * call useSearchParams() here, which means no <Suspense> boundary is needed.
+ * BrowseFilters — Editorial luxury filter sidebar.
+ * Active state: terracotta. Idle: warm white. No neon.
  */
 
 import { useRouter, usePathname } from "next/navigation";
-import { Search, X, SlidersHorizontal } from "lucide-react";
+import { Search, X } from "lucide-react";
 import {
   useCallback,
   useTransition,
@@ -36,9 +30,7 @@ interface BrowseFiltersProps {
   totalCount: number;
 }
 
-// ── Built With tools ─────────────────────────────────────────────────────────
-
-const TOOLS: { label: string; icon: string }[] = [
+const TOOLS = [
   { label: "Claude Code", icon: "◆" },
   { label: "Cursor",      icon: "⌫" },
   { label: "Lovable",     icon: "♥" },
@@ -47,22 +39,17 @@ const TOOLS: { label: string; icon: string }[] = [
   { label: "Replit",      icon: "⬡" },
 ];
 
-// ── Style helpers ────────────────────────────────────────────────────────────
+const tagActive: React.CSSProperties = {
+  background: "rgba(192,90,68,0.08)",
+  border: "0.5px solid rgba(192,90,68,0.40)",
+  color: "#C05A44",
+};
 
-const pillActive = {
-  background: "rgba(0,255,255,0.10)",
-  border: "1px solid rgba(0,255,255,0.35)",
-  color: "#c1fffe",
-  boxShadow: "0 0 12px rgba(0,255,255,0.08)",
-} as React.CSSProperties;
-
-const pillIdle = {
-  background: "rgba(25,25,28,0.70)",
-  border: "1px solid rgba(72,71,74,0.40)",
-  color: "#adaaad",
-} as React.CSSProperties;
-
-// ── Component ────────────────────────────────────────────────────────────────
+const tagIdle: React.CSSProperties = {
+  background: "#FFFFFF",
+  border: "0.5px solid rgba(15,15,15,0.15)",
+  color: "#6B6860",
+};
 
 export function BrowseFilters({
   categories,
@@ -77,10 +64,8 @@ export function BrowseFilters({
   const [inputValue, setInputValue]  = useState(searchQuery);
   const isFirstRender = useRef(true);
 
-  // Keep input in sync if the user navigates back/forward
   useEffect(() => { setInputValue(searchQuery); }, [searchQuery]);
 
-  // Build a clean href from the three filter dimensions
   const buildHref = useCallback(
     (q: string | undefined, category: string | null, builtWith: string | null) => {
       const sp = new URLSearchParams();
@@ -93,7 +78,6 @@ export function BrowseFilters({
     [pathname],
   );
 
-  // Debounced search — skip the very first render to avoid a spurious push
   useEffect(() => {
     if (isFirstRender.current) { isFirstRender.current = false; return; }
     const timer = setTimeout(() => {
@@ -102,7 +86,6 @@ export function BrowseFilters({
       });
     }, 350);
     return () => clearTimeout(timer);
-    // activeCategorySlug / activeBuiltWith intentionally omitted — their changes are instant
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inputValue]);
 
@@ -120,114 +103,85 @@ export function BrowseFilters({
 
   return (
     <div
-      className="flex flex-col gap-5"
-      style={{ opacity: isPending ? 0.65 : 1, transition: "opacity 0.15s ease" }}
+      className="flex flex-col gap-6"
+      style={{ opacity: isPending ? 0.60 : 1, transition: "opacity 0.15s ease" }}
     >
-      {/* ── Search bar ──────────────────────────────────────────────────── */}
+      {/* ── Search ── */}
       <div
-        className="flex items-center gap-3 rounded-xl px-4 py-3"
-        style={{
-          background:          "rgba(25,25,28,0.80)",
-          backdropFilter:      "blur(12px)",
-          WebkitBackdropFilter:"blur(12px)",
-          border:              "1px solid rgba(72,71,74,0.50)",
-        }}
+        className="flex items-center gap-3 rounded-lg px-3.5 py-2.5 bg-white"
+        style={{ border: "0.5px solid rgba(15,15,15,0.15)" }}
       >
-        <Search className="h-4 w-4 shrink-0 text-cyan-400/40" />
+        <Search className="h-3.5 w-3.5 shrink-0 text-[#9B9690]" />
         <input
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="Search products…"
-          className="flex-1 bg-transparent text-sm text-white/90 placeholder:text-on-surface-variant/40 outline-none font-body"
+          className="flex-1 bg-transparent text-sm text-[#0F0F0F] placeholder:text-[#9B9690] outline-none"
         />
         {inputValue && (
-          <button
-            onClick={() => setInputValue("")}
-            aria-label="Clear search"
-          >
-            <X className="h-3.5 w-3.5 text-on-surface-variant/50 hover:text-white/80 transition-colors" />
+          <button onClick={() => setInputValue("")} aria-label="Clear search">
+            <X className="h-3.5 w-3.5 text-[#9B9690] hover:text-[#0F0F0F] transition-colors" />
           </button>
         )}
       </div>
 
-      {/* ── Category pills ──────────────────────────────────────────────── */}
+      {/* ── Category ── */}
       <div>
-        <div className="mb-3 flex items-center gap-2">
-          <SlidersHorizontal className="h-3 w-3 text-on-surface-variant/40" />
-          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-on-surface-variant/50">
-            Category
-          </span>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          {/* "All" pill */}
+        <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9B9690]">
+          Category
+        </p>
+        <div className="flex flex-wrap gap-1.5">
           <button
             onClick={() => handleCategory(null)}
-            className="rounded-full px-3.5 py-1.5 font-mono text-[11px] font-semibold transition-all duration-200 hover:scale-[1.03] active:scale-[0.97]"
-            style={activeCategorySlug === null ? pillActive : pillIdle}
+            className="rounded px-3 py-1.5 text-[11px] font-medium transition-all duration-150"
+            style={activeCategorySlug === null ? tagActive : tagIdle}
           >
             All
           </button>
-
           {categories.map((cat) => (
             <button
               key={cat.id}
               onClick={() => handleCategory(cat.slug)}
-              className="rounded-full px-3.5 py-1.5 font-mono text-[11px] font-semibold transition-all duration-200 hover:scale-[1.03] active:scale-[0.97]"
-              style={activeCategorySlug === cat.slug ? pillActive : pillIdle}
+              className="rounded px-3 py-1.5 text-[11px] font-medium transition-all duration-150"
+              style={activeCategorySlug === cat.slug ? tagActive : tagIdle}
             >
-              {cat.icon ? `${cat.icon} ` : ""}
-              {cat.name}
+              {cat.icon ? `${cat.icon} ` : ""}{cat.name}
             </button>
           ))}
         </div>
       </div>
 
-      {/* ── Built With pills ────────────────────────────────────────────── */}
+      {/* ── Built With ── */}
       <div>
-        <div className="mb-3 flex items-center gap-2">
-          <SlidersHorizontal className="h-3 w-3 text-on-surface-variant/40" />
-          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-on-surface-variant/50">
-            Built With
-          </span>
-        </div>
-
-        <div className="flex flex-wrap gap-2">
-          {/* "All" pill */}
-          <button
-            onClick={() => handleBuiltWith(null)}
-            className="rounded-full px-3.5 py-1.5 font-mono text-[11px] font-semibold transition-all duration-200 hover:scale-[1.03] active:scale-[0.97]"
-            style={activeBuiltWith === null ? pillActive : pillIdle}
-          >
-            All
-          </button>
-
-          {TOOLS.map((tool) => (
+        <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9B9690]">
+          Built With
+        </p>
+        <div className="flex flex-wrap gap-1.5">
+          {TOOLS.map(({ label, icon }) => (
             <button
-              key={tool.label}
-              onClick={() => handleBuiltWith(tool.label)}
-              className="rounded-full px-3.5 py-1.5 font-mono text-[11px] font-semibold transition-all duration-200 hover:scale-[1.03] active:scale-[0.97]"
-              style={activeBuiltWith === tool.label ? pillActive : pillIdle}
+              key={label}
+              onClick={() => handleBuiltWith(activeBuiltWith === label ? null : label)}
+              className="rounded px-3 py-1.5 text-[11px] font-medium transition-all duration-150"
+              style={activeBuiltWith === label ? tagActive : tagIdle}
             >
-              {tool.icon} {tool.label}
+              <span className="mr-1 opacity-50">{icon}</span>
+              {label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* ── Result count ────────────────────────────────────────────────── */}
-      <p className="font-mono text-[11px] text-on-surface-variant/45 leading-relaxed">
+      {/* ── Count ── */}
+      <p className="text-[11px] text-[#9B9690]">
         {totalCount === 0 ? (
           "No products found"
         ) : (
           <>
-            <span className="text-cyan-400/70">{totalCount}</span>
+            <span className="font-semibold text-[#C05A44]">{totalCount}</span>
             {` product${totalCount === 1 ? "" : "s"}`}
             {searchQuery && (
-              <> for{" "}
-                <span className="text-cyan-400/60">"{searchQuery}"</span>
-              </>
+              <> for &ldquo;<span className="text-[#0F0F0F]">{searchQuery}</span>&rdquo;</>
             )}
           </>
         )}

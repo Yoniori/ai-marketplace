@@ -21,13 +21,6 @@ interface ListingCardProps {
   is_trending?: boolean;
 }
 
-/** Price badge colours keyed by price_type */
-const PRICE_STYLE = {
-  free:    { color: "#69fd5d", border: "rgba(105,253,93,0.20)",  bg: "rgba(105,253,93,0.06)"  },
-  paid:    { color: "#c1fffe", border: "rgba(193,255,254,0.20)", bg: "rgba(193,255,254,0.06)" },
-  contact: { color: "#bf81ff", border: "rgba(191,129,255,0.20)", bg: "rgba(191,129,255,0.06)" },
-} as const;
-
 function formatPrice(cents: number, currency = "usd"): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -37,15 +30,14 @@ function formatPrice(cents: number, currency = "usd"): string {
 }
 
 /**
- * ListingCard — Stitch glassmorphism product card.
+ * ListingCard — Editorial luxury product card.
  *
  * Visual language:
- *   • Dark frosted glass surface (glass-card utility)
- *   • Cyan glow on hover
- *   • Space Grotesk for title
- *   • JetBrains Mono for price, category, meta
- *   • Colour-coded price badge (green=free, cyan=paid, violet=contact)
- *   • Social proof badges: Trending / New / Checked
+ *   • White surface, soft shadow, hairline border
+ *   • Playfair Display for title
+ *   • Terracotta / Forest / Gold status badges
+ *   • Elegant hover: shadow lift + subtle border darkening
+ *   • No glows, no gradients, no neon
  */
 export function ListingCard({
   slug,
@@ -65,7 +57,6 @@ export function ListingCard({
   is_new,
   is_trending,
 }: ListingCardProps) {
-  const priceStyle = PRICE_STYLE[price_type] ?? PRICE_STYLE.paid;
   const priceLabel =
     price_type === "free"
       ? "Free"
@@ -73,33 +64,41 @@ export function ListingCard({
       ? "Contact"
       : formatPrice(price_cents, currency);
 
-  // Determine which status badge to show (at most one)
+  // Price badge styles
+  const priceStyle =
+    price_type === "free"
+      ? { color: "#2D4739", border: "0.5px solid rgba(45,71,57,0.30)", bg: "rgba(45,71,57,0.06)" }
+      : price_type === "contact"
+      ? { color: "#B89F6E", border: "0.5px solid rgba(184,159,110,0.40)", bg: "rgba(184,159,110,0.08)" }
+      : { color: "#0F0F0F", border: "0.5px solid rgba(15,15,15,0.18)", bg: "rgba(15,15,15,0.04)" };
+
+  // Status badge — editorial minimal tags
   let statusBadge: React.ReactNode = null;
   if (is_trending) {
     statusBadge = (
       <span
-        className="rounded-full px-2 py-0.5 font-mono text-[9px] font-semibold"
-        style={{ color: "#fb923c", border: "1px solid rgba(251,146,60,0.25)", background: "rgba(251,146,60,0.08)" }}
+        className="rounded px-2 py-0.5 text-[10px] font-semibold tracking-wide"
+        style={{ color: "#C05A44", border: "0.5px solid rgba(192,90,68,0.30)", background: "rgba(192,90,68,0.06)" }}
       >
-        🔥 Trending
+        Trending
       </span>
     );
   } else if (is_new) {
     statusBadge = (
       <span
-        className="rounded-full px-2 py-0.5 font-mono text-[9px] font-semibold"
-        style={{ color: "#bf81ff", border: "1px solid rgba(191,129,255,0.25)", background: "rgba(191,129,255,0.08)" }}
+        className="rounded px-2 py-0.5 text-[10px] font-semibold tracking-wide"
+        style={{ color: "#2D4739", border: "0.5px solid rgba(45,71,57,0.30)", background: "rgba(45,71,57,0.06)" }}
       >
-        ✨ New
+        New
       </span>
     );
   } else if (review_status === "ready") {
     statusBadge = (
       <span
-        className="rounded-full px-2 py-0.5 font-mono text-[9px] font-semibold"
-        style={{ color: "#00e6e6", border: "1px solid rgba(0,230,230,0.20)", background: "rgba(0,230,230,0.06)" }}
+        className="rounded px-2 py-0.5 text-[10px] font-semibold tracking-wide"
+        style={{ color: "#B89F6E", border: "0.5px solid rgba(184,159,110,0.35)", background: "rgba(184,159,110,0.07)" }}
       >
-        ✓ Checked
+        Verified
       </span>
     );
   }
@@ -107,24 +106,13 @@ export function ListingCard({
   return (
     <Link
       href={`/listing/${slug}`}
-      className="group relative flex flex-col rounded-xl border transition-all duration-300 hover:shadow-[0_0_40px_rgba(0,255,255,0.10)] hover:border-cyan-400/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="group relative flex flex-col rounded-xl bg-white transition-all duration-200 hover:shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       style={{
-        background: "rgba(25, 25, 28, 0.80)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-        borderColor: "rgba(72, 71, 74, 0.60)",
+        border: "0.5px solid rgba(15,15,15,0.09)",
+        boxShadow: "0 1px 3px rgba(15,15,15,0.06), 0 1px 2px rgba(15,15,15,0.04)",
       }}
     >
-      {/* ── Top accent line — appears on hover ── */}
-      <div
-        aria-hidden
-        className="absolute inset-x-0 top-0 h-px rounded-t-xl opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-        style={{
-          background: "linear-gradient(90deg, transparent, rgba(0,255,255,0.50), rgba(156,66,244,0.50), transparent)",
-        }}
-      />
-
-      {/* ── Thumbnail image ── */}
+      {/* ── Thumbnail ── */}
       {thumbnail_url && (
         <div className="overflow-hidden rounded-t-xl" style={{ aspectRatio: "16/9" }}>
           <img
@@ -138,29 +126,23 @@ export function ListingCard({
 
       <div className="flex flex-1 flex-col gap-4 p-5">
 
-        {/* ── Status badge + price row ── */}
+        {/* ── Status + price row ── */}
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
-            {statusBadge}
-            {!statusBadge && category ? (
-              <span className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant/60">
-                {category}
-              </span>
-            ) : !statusBadge ? (
-              <span />
-            ) : category ? (
-              <span className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant/60 hidden">
-                {category}
-              </span>
-            ) : null}
+            {statusBadge ?? (
+              category ? (
+                <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-[#9B9690]">
+                  {category}
+                </span>
+              ) : null
+            )}
           </div>
 
-          {/* Price badge */}
           <span
-            className="rounded-full px-2.5 py-1 font-mono text-[11px] font-semibold shrink-0"
+            className="rounded px-2 py-0.5 text-[11px] font-semibold shrink-0"
             style={{
               color: priceStyle.color,
-              border: `1px solid ${priceStyle.border}`,
+              border: priceStyle.border,
               background: priceStyle.bg,
             }}
           >
@@ -170,49 +152,49 @@ export function ListingCard({
 
         {/* ── Title ── */}
         <div className="flex-1">
-          <h3 className="font-headline text-[0.9375rem] font-semibold leading-snug text-white/90 transition-colors duration-200 group-hover:text-cyan-400 line-clamp-2">
+          <h3 className="font-headline text-[0.9375rem] font-semibold leading-snug text-[#0F0F0F] transition-colors duration-150 group-hover:text-[#C05A44] line-clamp-2">
             {title}
           </h3>
           {tagline && (
-            <p className="mt-1.5 text-xs leading-relaxed text-on-surface-variant/70 line-clamp-2">
+            <p className="mt-1.5 text-xs leading-relaxed text-[#6B6860] line-clamp-2">
               {tagline}
             </p>
           )}
         </div>
 
         {/* ── Meta row ── */}
-        <div className="flex items-center justify-between border-t pt-4" style={{ borderColor: "rgba(72,71,74,0.40)" }}>
-
-          {/* Creator + stats */}
-          <div className="flex flex-col gap-1 min-w-0">
+        <div
+          className="flex items-center justify-between pt-3.5"
+          style={{ borderTop: "0.5px solid rgba(15,15,15,0.08)" }}
+        >
+          <div className="flex flex-col gap-0.5 min-w-0">
             {(creator_display_name || creator_username) && (
-              <p className="font-mono text-[10px] text-on-surface-variant/50 truncate">
+              <p className="text-[10px] text-[#9B9690] truncate">
                 by {creator_display_name ?? `@${creator_username}`}
               </p>
             )}
             <div className="flex items-center gap-3">
               {avg_rating != null && review_count != null && review_count > 0 && (
-                <span className="flex items-center gap-1 font-mono text-[10px] text-on-surface-variant/60">
-                  <Star className="h-2.5 w-2.5 fill-current text-yellow-400" />
+                <span className="flex items-center gap-1 text-[10px] text-[#6B6860]">
+                  <Star className="h-2.5 w-2.5 fill-[#B89F6E] text-[#B89F6E]" />
                   {avg_rating.toFixed(1)}
-                  <span className="text-on-surface-variant/40">({review_count})</span>
+                  <span className="text-[#9B9690]">({review_count})</span>
                 </span>
               )}
               {(purchase_count == null || purchase_count === 0) ? (
-                <span className="font-mono text-[10px]" style={{ color: "rgba(0,230,230,0.40)" }}>
+                <span className="text-[10px] text-[#C05A44]/60">
                   Be first to buy
                 </span>
               ) : (
-                <span className="font-mono text-[10px] text-on-surface-variant/40">
+                <span className="text-[10px] text-[#9B9690]">
                   {purchase_count} sold
                 </span>
               )}
             </div>
           </div>
 
-          {/* Arrow caret */}
           <ArrowRight
-            className="h-4 w-4 shrink-0 text-on-surface-variant/30 transition-all duration-200 group-hover:text-cyan-400 group-hover:translate-x-0.5"
+            className="h-3.5 w-3.5 shrink-0 text-[#9B9690] transition-all duration-150 group-hover:text-[#C05A44] group-hover:translate-x-0.5"
           />
         </div>
 

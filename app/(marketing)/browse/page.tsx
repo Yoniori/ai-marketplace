@@ -119,49 +119,22 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
 
   // ── 3. Render ─────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen" style={{ background: "#0e0e10" }}>
+    <div className="min-h-screen bg-[#FDFCFB]">
 
-      {/* ── Hero header ──────────────────────────────────────────────────── */}
-      <div
-        className="border-b"
-        style={{
-          background: [
-            "radial-gradient(ellipse 70% 60% at 70% -10%, rgba(0,255,255,0.06), transparent)",
-            "radial-gradient(ellipse 50% 40% at 10% 110%, rgba(119,1,208,0.05), transparent)",
-            "#0e0e10",
-          ].join(", "),
-          borderColor: "rgba(0,255,255,0.08)",
-        }}
-      >
-        <div className="container py-12 md:py-16">
-          {/* Live badge */}
-          <div
-            className="mb-5 inline-flex items-center gap-2 rounded-full px-3 py-1"
-            style={{
-              background: "rgba(0,255,255,0.06)",
-              border:     "1px solid rgba(0,255,255,0.18)",
-            }}
-          >
-            <span
-              className="h-1.5 w-1.5 rounded-full animate-pulse"
-              style={{
-                background: "#00e6e6",
-                boxShadow:  "0 0 6px rgba(0,230,230,0.6)",
-              }}
-            />
-            <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-cyan-400/80">
-              Marketplace
-            </span>
-          </div>
-
+      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      <div style={{ borderBottom: "0.5px solid rgba(15,15,15,0.09)" }}>
+        <div className="container py-10 md:py-14">
+          <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#9B9690]">
+            Marketplace
+          </p>
           <h1
-            className="font-headline font-black tracking-[-0.04em] text-white"
-            style={{ fontSize: "clamp(2rem, 5vw, 3.25rem)", lineHeight: 1.05 }}
+            className="font-headline font-bold tracking-tight text-[#0F0F0F]"
+            style={{ fontSize: "clamp(2rem, 5vw, 3rem)", lineHeight: 1.05 }}
           >
             Browse Products
           </h1>
-          <p className="mt-3 max-w-lg text-base leading-relaxed text-on-surface-variant">
-            Apps, automations, agents, and tools built with AI coding&nbsp;tools.
+          <p className="mt-3 max-w-lg text-base leading-relaxed text-[#6B6860]">
+            Apps, automations, agents, and tools built with AI coding tools.
             Instant purchase — immediate access.
           </p>
         </div>
@@ -234,29 +207,21 @@ function EmptyState({
 
   return (
     <div
-      className="flex flex-col items-center gap-5 rounded-2xl px-8 py-24 text-center"
-      style={{
-        background: "rgba(25,25,28,0.50)",
-        border:     "1px solid rgba(72,71,74,0.28)",
-      }}
+      className="flex flex-col items-center gap-5 rounded-xl px-8 py-24 text-center bg-white"
+      style={{ border: "0.5px solid rgba(15,15,15,0.09)" }}
     >
-      {/* Icon */}
       <div
-        className="flex h-14 w-14 items-center justify-center rounded-xl"
-        style={{
-          background: "rgba(0,255,255,0.06)",
-          border:     "1px solid rgba(0,255,255,0.18)",
-        }}
+        className="flex h-12 w-12 items-center justify-center rounded-xl"
+        style={{ background: "#F5F3F0", border: "0.5px solid rgba(15,15,15,0.10)" }}
       >
-        <Package className="h-6 w-6 text-cyan-400/60" />
+        <Package className="h-5 w-5 text-[#9B9690]" />
       </div>
 
-      {/* Copy */}
       <div className="max-w-xs">
-        <p className="font-headline text-lg font-semibold text-white/80">
+        <p className="font-headline text-lg font-semibold text-[#0F0F0F]">
           {isFiltered ? "No results found" : "No products yet"}
         </p>
-        <p className="mt-2 text-sm leading-relaxed text-on-surface-variant/55">
+        <p className="mt-2 text-sm leading-relaxed text-[#6B6860]">
           {searchQuery
             ? `Nothing matched "${searchQuery}". Try a broader search or clear the category filter.`
             : hasCategory
@@ -265,12 +230,9 @@ function EmptyState({
         </p>
       </div>
 
-      {/* Neon divider */}
       <div
-        className="h-px w-16 rounded-full"
-        style={{
-          background: "linear-gradient(90deg, transparent, rgba(0,255,255,0.35), transparent)",
-        }}
+        className="h-px w-12 rounded-full"
+        style={{ background: "rgba(15,15,15,0.12)" }}
       />
     </div>
   );
