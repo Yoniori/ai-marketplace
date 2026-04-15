@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { UserMenu } from "@/components/layout/UserMenu";
 
+// Explicit type to work around postgrest-js v2 column inference returning never
 type ProfileRow = {
   username: string;
   display_name: string | null;
@@ -10,9 +11,12 @@ type ProfileRow = {
 };
 
 /**
- * Navbar — Dark Cyber-Tech navigation.
- * Pure black background, sharp lines, indigo CTA.
- * No warmth, no gradients — built for the future.
+ * Navbar — Server Component.
+ * Glassmorphism rail with Stitch neon-dark design system:
+ *   • Frosted glass bg + cyan bottom glow
+ *   • Space Grotesk wordmark with cyan→violet gradient
+ *   • JetBrains Mono nav links
+ *   • Cyan→violet gradient CTA pill with glow
  */
 export async function Navbar() {
   const supabase = await createClient();
@@ -31,41 +35,49 @@ export async function Navbar() {
     <header
       className="sticky top-0 z-50 w-full"
       style={{
-        background: "#000000",
-        borderBottom: "1px solid rgba(255,255,255,0.07)",
+        background: "rgba(14, 14, 16, 0.80)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        borderBottom: "1px solid rgba(0, 255, 255, 0.10)",
+        boxShadow: "0 0 40px rgba(0, 255, 255, 0.06), 0 1px 0 rgba(0,255,255,0.06)",
       }}
     >
-      <div className="container flex h-14 items-center justify-between">
+      <div className="container relative flex h-16 items-center justify-between">
 
         {/* ── Wordmark ── */}
         <Link href="/" className="flex items-center gap-2.5 group">
+          {/* Glyph badge */}
           <span
-            className="inline-flex h-6 w-6 items-center justify-center rounded font-mono text-[11px] font-bold leading-none select-none transition-shadow duration-200 group-hover:shadow-glow-sm"
+            className="inline-flex h-6 w-6 items-center justify-center rounded-lg font-mono text-[11px] font-bold leading-none select-none transition-all duration-300 group-hover:shadow-[0_0_12px_rgba(0,255,255,0.4)]"
             style={{
-              background: "#6366F1",
-              color: "#FFFFFF",
+              border: "1px solid rgba(0, 255, 255, 0.30)",
+              background: "rgba(0, 255, 255, 0.08)",
+              color: "#00e6e6",
             }}
           >
             ▸
           </span>
-          <span className="font-headline text-sm font-semibold tracking-tight text-white">
+          <span
+            className="font-headline text-sm font-bold tracking-tight bg-clip-text text-transparent"
+            style={{
+              backgroundImage: "linear-gradient(135deg, #c1fffe 0%, #bf81ff 100%)",
+            }}
+          >
             Vibe Code Market
           </span>
         </Link>
 
         {/* ── Primary nav ── */}
-        <nav className="hidden md:flex items-center gap-6">
+        <nav className="hidden md:flex items-center gap-1">
           <Link
             href="/browse"
-            className="text-sm transition-colors duration-150 hover:text-white"
-            style={{ color: "#71717A" }}
+            className="font-mono px-4 py-2 rounded-lg text-sm text-on-surface-variant transition-all duration-200 hover:text-cyan-400 hover:bg-cyan-400/5"
           >
             Browse
           </Link>
           <Link
             href="/signup"
-            className="text-sm transition-colors duration-150 hover:text-white"
-            style={{ color: "#71717A" }}
+            className="font-mono px-4 py-2 rounded-lg text-sm text-on-surface-variant transition-all duration-200 hover:text-cyan-400 hover:bg-cyan-400/5"
           >
             Sell
           </Link>
@@ -84,15 +96,19 @@ export async function Navbar() {
             <>
               <Link
                 href="/login"
-                className="text-sm transition-colors duration-150 hover:text-white"
-                style={{ color: "#71717A" }}
+                className="font-mono px-3 py-1.5 text-sm text-on-surface-variant transition-colors hover:text-cyan-400"
               >
                 Sign in
               </Link>
+
+              {/* Cyan→violet gradient CTA pill */}
               <Link
                 href="/signup"
-                className="inline-flex h-9 items-center justify-center rounded-md px-5 text-sm font-semibold text-white transition-all duration-150 hover:bg-[#4F46E5] hover:shadow-glow-sm active:scale-[0.98] focus-visible:outline-none"
-                style={{ background: "#6366F1" }}
+                className="inline-flex h-9 items-center justify-center rounded-full px-5 font-headline text-sm font-bold tracking-tight text-[#0e0e10] transition-all duration-200 hover:scale-105 active:scale-95 focus-visible:outline-none"
+                style={{
+                  background: "linear-gradient(135deg, #00e6e6, #9c42f4)",
+                  boxShadow: "0 0 20px rgba(0, 230, 230, 0.30)",
+                }}
               >
                 Get started
               </Link>

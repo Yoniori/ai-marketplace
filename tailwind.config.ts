@@ -53,43 +53,57 @@ const config: Config = {
           foreground: "hsl(var(--card-foreground))",
         },
 
-        // ── Dark Cyber-Tech design tokens ──────────────────────────────────
-        // Electric Indigo — primary accent
-        "indigo":       "#6366F1",
-        "indigo-light": "#818CF8",
-        "indigo-dim":   "rgba(99,102,241,0.15)",
-        "indigo-glow":  "rgba(99,102,241,0.25)",
-
-        // Cyber Teal — secondary accent (use sparingly)
-        "cyber":        "#00F5FF",
-        "cyber-dim":    "rgba(0,245,255,0.10)",
-
-        // Dark surfaces
-        "void":         "#000000",
-        "surface-0":    "#000000",
-        "surface-1":    "#0A0A0A",
-        "surface-2":    "#111111",
-        "surface-3":    "#1A1A1A",
-
-        // Text scale
-        "text-1":       "#FFFFFF",
-        "text-2":       "#A1A1AA",
-        "text-3":       "#71717A",
-        "text-4":       "#3F3F46",
-
-        // Status colors
-        "status-green": "#22C55E",
-        "status-amber": "#F59E0B",
-        "status-red":   "#EF4444",
-
-        // Legacy compatibility aliases used by dashboard, auth, etc.
-        "on-surface":          "#FFFFFF",
-        "on-surface-variant":  "#A1A1AA",
-        "outline-variant":     "rgba(255,255,255,0.08)",
-        "surface-container":   "#0A0A0A",
-        "surface-card":        "#0A0A0A",
-        "error":               "#EF4444",
-        "tertiary":            "#00F5FF",
+        // ── Stitch / Material-3 design tokens (from Vibe Code Market Stitch design)
+        // NOTE: `primary`, `secondary`, and `background` are intentionally excluded
+        // here — they live above as CSS-variable-based tokens for shadcn/ui compat.
+        "inverse-surface":            "#fcf8fb",
+        "on-tertiary-fixed":          "#003e03",
+        "tertiary":                   "#69fd5d",
+        "secondary-fixed-dim":        "#dab4ff",
+        "on-secondary":               "#32005c",
+        "on-surface":                 "#f9f5f8",
+        "on-tertiary":                "#005e07",
+        "inverse-primary":            "#006a6a",
+        "inverse-on-surface":         "#565457",
+        "on-surface-variant":         "#adaaad",
+        "on-tertiary-container":      "#005406",
+        "surface-tint":               "#c1fffe",
+        "primary-fixed-dim":          "#00e6e6",
+        "on-secondary-fixed":         "#4e008a",
+        "surface-variant":            "#262528",
+        "on-error-container":         "#ffa8a3",
+        "on-error":                   "#490006",
+        "on-primary-fixed-variant":   "#006262",
+        "on-background":              "#f9f5f8",
+        "surface-dim":                "#0e0e10",
+        "error-dim":                  "#d7383b",
+        "surface-container-highest":  "#262528",
+        "primary-fixed":              "#00f5f5",
+        "surface":                    "#0e0e10",
+        "surface-container-lowest":   "#000000",
+        "tertiary-container":         "#59ee50",
+        "primary-container":          "#00ffff",
+        "outline-variant":            "#48474a",
+        "tertiary-dim":               "#49e043",
+        "on-primary":                 "#006767",
+        "outline":                    "#767577",
+        "secondary-fixed":            "#e4c6ff",
+        "secondary-container":        "#7701d0",
+        "error-container":            "#9f0519",
+        "secondary-dim":              "#9c42f4",
+        "primary-dim":                "#00e6e6",
+        "error":                      "#ff716c",
+        "tertiary-fixed-dim":         "#49e043",
+        "on-secondary-fixed-variant": "#7500cc",
+        "on-primary-fixed":           "#004343",
+        "on-tertiary-fixed-variant":  "#005f07",
+        "surface-bright":             "#2c2c2f",
+        "tertiary-fixed":             "#59ee50",
+        "on-primary-container":       "#005d5d",
+        "on-secondary-container":     "#f0dcff",
+        "surface-container-low":      "#131315",
+        "surface-container":          "#19191c",
+        "surface-container-high":     "#1f1f22",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -97,58 +111,32 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        // Inter — body and UI
+        // --font-sans is injected by the Inter setup in app/layout.tsx
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
-        body: ["var(--font-sans)", "system-ui", "sans-serif"],
-        // Space Grotesk — sharp cyber headlines
+        // Space Grotesk — loaded via layout.tsx as --font-headline
         headline: ["var(--font-headline)", "Space Grotesk", "system-ui", "sans-serif"],
-        label:    ["var(--font-sans)", "system-ui", "sans-serif"],
-        // JetBrains Mono — code and technical details
+        label:    ["var(--font-headline)", "Space Grotesk", "system-ui", "sans-serif"],
+        // JetBrains Mono — loaded via layout.tsx as --font-mono
         mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "monospace"],
       },
       keyframes: {
         "accordion-down": {
           from: { height: "0" },
-          to:   { height: "var(--radix-accordion-content-height)" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
           from: { height: "var(--radix-accordion-content-height)" },
-          to:   { height: "0" },
+          to: { height: "0" },
         },
         "enter": {
-          from: { opacity: "0", transform: "translateY(4px)" },
+          from: { opacity: "0", transform: "translateY(6px)" },
           to:   { opacity: "1", transform: "translateY(0)" },
-        },
-        "fade-in": {
-          from: { opacity: "0" },
-          to:   { opacity: "1" },
-        },
-        "pulse-dot": {
-          "0%, 100%": { opacity: "1", transform: "scale(1)" },
-          "50%":      { opacity: "0.4", transform: "scale(0.8)" },
-        },
-        "glow-pulse": {
-          "0%, 100%": { boxShadow: "0 0 6px rgba(99,102,241,0.4)" },
-          "50%":      { boxShadow: "0 0 18px rgba(99,102,241,0.8)" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up":   "accordion-up 0.2s ease-out",
-        "enter":          "enter 0.25s ease-out",
-        "fade-in":        "fade-in 0.2s ease-out",
-        "pulse-dot":      "pulse-dot 1.8s ease-in-out infinite",
-        "glow-pulse":     "glow-pulse 2s ease-in-out infinite",
-      },
-      boxShadow: {
-        // Cyber glow shadows
-        "glow-sm":    "0 0 8px rgba(99,102,241,0.35)",
-        "glow":       "0 0 16px rgba(99,102,241,0.40), 0 0 4px rgba(99,102,241,0.20)",
-        "glow-lg":    "0 0 32px rgba(99,102,241,0.35), 0 0 8px rgba(99,102,241,0.20)",
-        "glow-teal":  "0 0 12px rgba(0,245,255,0.30)",
-        "card":       "0 1px 3px rgba(0,0,0,0.6)",
-        "card-hover": "0 0 0 1px rgba(99,102,241,0.40), 0 4px 24px rgba(99,102,241,0.15)",
-        "float":      "0 8px 32px rgba(0,0,0,0.8)",
+        "enter":          "enter 0.3s ease-out",
       },
     },
   },

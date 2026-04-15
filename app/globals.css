@@ -3,55 +3,77 @@
 @tailwind utilities;
 
 @layer base {
-  /*
-   * ── Dark Cyber-Tech Design System ─────────────────────────────────────────
-   *
-   * Palette:
-   *   Background:   #000000  — pure black
-   *   Surface:      #0A0A0A  — near-black card surface
-   *   Primary:      #6366F1  — electric indigo
-   *   Secondary:    #00F5FF  — cyber teal (use sparingly)
-   *   Text:         #FFFFFF  — white
-   *   Text Muted:   #A1A1AA  — zinc-400
-   *   Border:       rgba(255,255,255,0.07) — dark hairline
-   * ─────────────────────────────────────────────────────────────────────────
-   */
+  /* ── Light mode — kept minimal; app runs in forced dark mode ── */
   :root {
-    /* Surfaces */
-    --background:         0 0% 0%;      /* #000000 */
-    --foreground:         0 0% 100%;    /* #FFFFFF */
-
-    --card:               0 0% 4%;      /* #0A0A0A */
-    --card-foreground:    0 0% 100%;
-
-    --popover:            0 0% 7%;      /* #111111 */
-    --popover-foreground: 0 0% 100%;
-
-    /* Primary — Electric Indigo */
-    --primary:            239 84% 67%;  /* #6366F1 */
+    --background:         0 0% 100%;
+    --foreground:         0 0% 6%;
+    --card:               0 0% 100%;
+    --card-foreground:    0 0% 6%;
+    --popover:            0 0% 100%;
+    --popover-foreground: 0 0% 6%;
+    --primary:            180 100% 35%;
     --primary-foreground: 0 0% 100%;
+    --secondary:            0 0% 96%;
+    --secondary-foreground: 0 0% 15%;
+    --muted:            0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+    --accent:            0 0% 94%;
+    --accent-foreground: 0 0% 10%;
+    --destructive:            2 100% 59%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 89%;
+    --input:  0 0% 89%;
+    --ring:   180 100% 35%;
+    --radius: 0.5rem;
+  }
 
-    /* Secondary — dark surface */
-    --secondary:          0 0% 11%;     /* #1A1A1A */
-    --secondary-foreground: 0 0% 100%;
+  /* ── Dark mode — Stitch neon-dark design system ───────────────────────────
+   *
+   *  Color key (Stitch → HSL conversion):
+   *    background / surface  #0e0e10  →  240  7%  6%
+   *    card / surface-container  #19191c  →  240  6%  10%
+   *    popover  #1f1f22  →  240  5%  13%
+   *    primary (cyan)  #00e6e6  →  180 100%  45%
+   *    secondary (violet)  #9c42f4  →  270  89%  61%
+   *    muted-foreground  #adaaad  →  300   1%  67%
+   *    border / outline-variant  #48474a  →  260   2%  28%
+   *
+   * ─────────────────────────────────────────────────────────────────────── */
+  .dark {
+    /* Surfaces */
+    --background:         240 7% 6%;     /* #0e0e10 — Stitch "surface" */
+    --foreground:         240 5% 96%;    /* near-white main text */
 
-    /* Muted */
-    --muted:              0 0% 9%;      /* #171717 */
-    --muted-foreground:   240 4% 64%;   /* #A1A1AA — zinc-400 */
+    --card:               240 6% 10%;   /* #19191c — elevated glass surface */
+    --card-foreground:    240 5% 96%;
+
+    --popover:            240 5% 13%;   /* #1f1f22 — dropdown surface */
+    --popover-foreground: 240 5% 96%;
+
+    /* Primary — cyan replaces violet as the signature accent */
+    --primary:            180 100% 45%; /* #00e6e6 — Stitch primary-dim */
+    --primary-foreground: 240  7%  6%;  /* dark text on bright cyan */
+
+    /* Secondary — violet */
+    --secondary:            270 89% 61%; /* #9c42f4 — Stitch secondary-dim */
+    --secondary-foreground: 0   0% 100%;
+
+    /* Muted surfaces */
+    --muted:            240 5% 13%;     /* #1f1f22 */
+    --muted-foreground: 300 1% 67%;     /* #adaaad — Stitch on-surface-variant */
 
     /* Accent */
-    --accent:             0 0% 11%;     /* #1A1A1A */
-    --accent-foreground:  0 0% 100%;
+    --accent:            240 5% 16%;
+    --accent-foreground: 240 5% 96%;
 
-    /* Destructive */
-    --destructive:        0 72% 51%;    /* #EF4444 */
-    --destructive-foreground: 0 0% 100%;
+    /* Destructive — Stitch error #ff716c */
+    --destructive:            2 100% 71%;
+    --destructive-foreground: 0 0%   100%;
 
-    /* Structure */
-    --border:             0 0% 14%;     /* #242424 */
-    --input:              0 0% 14%;
-    --ring:               239 84% 67%;  /* indigo */
-    --radius:             0.5rem;
+    /* Structure — visible dark borders, cyan focus rings */
+    --border: 260 2% 28%;   /* #48474a — Stitch outline-variant */
+    --input:  260 2% 28%;
+    --ring:   180 100% 45%; /* cyan — matches primary */
   }
 }
 
@@ -60,34 +82,30 @@
     @apply border-border;
   }
 
-  html {
-    color-scheme: dark;
-  }
-
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+    font-feature-settings: "rlig" 1, "calt" 1;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-headline tracking-tight;
+    @apply tracking-tight;
   }
 }
 
 @layer components {
   /* ── Buttons ─────────────────────────────────────────────────────────── */
   .btn-primary {
-    @apply inline-flex h-10 items-center justify-center gap-1.5 rounded-md bg-primary px-5 text-sm font-semibold text-primary-foreground transition-all duration-150 hover:bg-primary/90 hover:shadow-glow-sm active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex h-10 items-center justify-center gap-1.5 rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50;
   }
 
   .btn-outline {
-    @apply inline-flex h-10 items-center justify-center gap-1.5 rounded-md border border-border px-5 text-sm font-medium text-foreground transition-all duration-150 hover:border-primary/40 hover:bg-accent active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex h-10 items-center justify-center gap-1.5 rounded-md border border-border px-5 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50;
   }
 
   .btn-ghost {
-    @apply inline-flex h-10 items-center justify-center gap-1.5 rounded-md px-4 text-sm font-medium text-muted-foreground transition-all duration-150 hover:bg-accent hover:text-foreground focus-visible:outline-none;
+    @apply inline-flex h-10 items-center justify-center gap-1.5 rounded-md px-4 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring;
   }
 
   /* ── Cards ───────────────────────────────────────────────────────────── */
@@ -95,22 +113,9 @@
     @apply rounded-xl border border-border bg-card;
   }
 
-  /* Cyber card */
-  .surface-card {
-    background: #0A0A0A;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-  }
-
   /* ── Overline label ──────────────────────────────────────────────────── */
   .overline {
-    @apply text-[10px] font-semibold tracking-[0.14em] uppercase text-muted-foreground font-mono;
-  }
-
-  /* ── HUD Panel ───────────────────────────────────────────────────────── */
-  .hud-panel {
-    background: #0A0A0A;
-    border: 1px solid rgba(99, 102, 241, 0.20);
-    box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    @apply text-xs font-medium tracking-widest uppercase text-muted-foreground;
   }
 }
 
@@ -119,35 +124,60 @@
     text-wrap: balance;
   }
 
-  /* ── Card hover glow ───────────────────────────────────────────────────── */
-  .card-glow {
-    transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
+  /* ── Stitch design system utilities ───────────────────────────────────── */
+
+  /*
+   * Feature tile — per-card CSS custom properties set via inline style:
+   *   --tile-glow:   rgba colour for box-shadow bloom
+   *   --tile-border: rgba colour for border on hover
+   * Using CSS custom properties avoids onMouseEnter/onMouseLeave JS handlers
+   * so the component can remain a Next.js Server Component.
+   */
+  .feature-tile {
+    transition: box-shadow 0.30s ease, border-color 0.30s ease;
   }
-  .card-glow:hover {
-    border-color: rgba(99, 102, 241, 0.40) !important;
-    box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.15), 0 4px 24px rgba(99, 102, 241, 0.12) !important;
-    transform: translateY(-1px);
+  .feature-tile:hover {
+    box-shadow: 0 0 40px var(--tile-glow, rgba(0,255,255,0.06));
+    border-color: var(--tile-border, rgba(0,255,255,0.30)) !important;
+  }
+  .feature-tile:hover .feature-tile-top-line {
+    opacity: 1;
   }
 
-  /* Teal glow variant */
-  .card-glow-teal:hover {
-    border-color: rgba(0, 245, 255, 0.35) !important;
-    box-shadow: 0 0 12px rgba(0, 245, 255, 0.12) !important;
+  /* Glassmorphism card — dark frosted surface */
+  .glass-card {
+    background: rgba(25, 25, 28, 0.80);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
   }
 
-  /* ── Dark hairline divider ─────────────────────────────────────────────── */
-  .hairline {
-    height: 1px;
-    background: rgba(255, 255, 255, 0.06);
+  /* Cyan neon glow — applied as box-shadow */
+  .neon-glow-cyan {
+    box-shadow: 0 0 40px rgba(0, 255, 255, 0.10);
   }
 
-  /* ── Indigo text glow ──────────────────────────────────────────────────── */
-  .text-glow-indigo {
-    text-shadow: 0 0 20px rgba(99, 102, 241, 0.60);
+  /* Dual ambient light leak — cyan top-right + violet bottom-left */
+  .light-leak {
+    background:
+      radial-gradient(circle at top right, rgba(0, 255, 255, 0.05), transparent 40%),
+      radial-gradient(circle at bottom left, rgba(119, 1, 208, 0.05), transparent 40%);
   }
 
-  /* ── Dark surface utility ──────────────────────────────────────────────── */
-  .surface-warm {
-    background: #0A0A0A;
+  /* ── Primary CTA hover glow ───────────────────────────────────────────── */
+  /* Applied alongside bg-primary to add violet bloom on hover.             */
+  .btn-glow {
+    transition-property: box-shadow, background-color, color, border-color, opacity;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 200ms;
+  }
+  .btn-glow:hover {
+    box-shadow:
+      0 0 0 1px hsl(256 56% 50% / 0.35),
+      0 0 22px hsl(256 70% 62% / 0.26);
+  }
+  .btn-glow:focus-visible {
+    box-shadow:
+      0 0 0 2px hsl(256 56% 50% / 0.5),
+      0 0 16px hsl(256 70% 62% / 0.2);
   }
 }
