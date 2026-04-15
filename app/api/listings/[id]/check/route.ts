@@ -37,6 +37,8 @@ import { NextResponse } from "next/server";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { runCheck } from "@/lib/listing-check/worker";
 import { sendCheckFlaggedNotification } from "@/lib/resend/emails";
+import { decryptToken } from "@/lib/github/crypto";
+import type { EncryptedToken } from "@/lib/github/crypto";
 import type { ListingForCheck } from "@/lib/listing-check/types";
 
 export async function POST(
@@ -247,6 +249,36 @@ export async function POST(
     .update({ review_status: "pending" })
     .eq("id", id);
 
+  // ── Look up GitHub repo (for imported listings without a ZIP) ──
+  let github_repo_full_name: string | null = null;
+  let github_access_token:   string | null = null;
+
+  if (!listing.files_path) {
+    const { data: importedRepo } = await db
+      .from("github_imported_repos")
+      .select("github_repo_full_name")
+      .eq("listing_id", id)
+      .maybeSingle();
+
+    if (importedRepo?.github_repo_full_name) {
+      github_repo_full_name = importedRepo.github_repo_full_name;
+
+      const { data: conn } = await db
+        .from("github_connections")
+        .select("encrypted_access_token, token_iv, token_auth_tag")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (conn) {
+        github_access_token = decryptToken({
+          ciphertext: conn.encrypted_access_token,
+          iv:         conn.token_iv,
+          authTag:    conn.token_auth_tag,
+        } as EncryptedToken);
+      }
+    }
+  }
+
   // ── Run check synchronously ───────────────────────────────────
   const listingForCheck: ListingForCheck = {
     id: listing.id,
@@ -256,6 +288,8 @@ export async function POST(
     price_cents: listing.price_cents,
     files_path: listing.files_path ?? null,
     category_name: (listing.categories as { name: string } | null)?.name ?? null,
+    github_repo_full_name,
+    github_access_token,
   };
 
   // ── CHECKPOINT 5: worker ──────────────────────────────────────

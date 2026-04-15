@@ -91,6 +91,88 @@ function truncateToLines(content: string, maxLines: number): string {
   );
 }
 
+// ── GitHub ingestion ──────────────────────────────────────────
+
+const GITHUB_API_BASE = "https://api.github.com";
+const GITHUB_USER_AGENT = "VibecodeMarket/1.0";
+
+/**
+ * Fetch the most relevant files from a GitHub repo using the owner's
+ * stored access token. Falls back to `{ files: [], fileNames: [] }` on
+ * any error so the check can still proceed on description alone.
+ */
+export async function ingestFromGitHub(
+  repoFullName: string,
+  accessToken: string
+): Promise<{ files: IngestedFile[]; fileNames: string[] }> {
+  const headers = {
+    Authorization:          `Bearer ${accessToken}`,
+    Accept:                 "application/vnd.github+json",
+    "User-Agent":           GITHUB_USER_AGENT,
+    "X-GitHub-Api-Version": "2022-11-28",
+  };
+
+  try {
+    // 1. Get default branch name
+    const repoRes = await fetch(`${GITHUB_API_BASE}/repos/${repoFullName}`, {
+      headers,
+      cache: "no-store",
+    });
+    if (!repoRes.ok) return { files: [], fileNames: [] };
+    const repoData = (await repoRes.json()) as { default_branch?: string };
+    const defaultBranch = repoData.default_branch ?? "main";
+
+    // 2. Get the full file tree (recursive)
+    const treeRes = await fetch(
+      `${GITHUB_API_BASE}/repos/${repoFullName}/git/trees/${defaultBranch}?recursive=1`,
+      { headers, cache: "no-store" }
+    );
+    if (!treeRes.ok) return { files: [], fileNames: [] };
+    const treeData = (await treeRes.json()) as {
+      tree?: Array<{ path: string; type: string }>;
+    };
+
+    // 3. Filter to text blobs, sort by priority
+    const candidates = (treeData.tree ?? [])
+      .filter((item) => item.type === "blob" && !isBinary(basename(item.path)))
+      .sort((a, b) => {
+        const pa = priorityScore(basename(a.path));
+        const pb = priorityScore(basename(b.path));
+        if (pa !== pb) return pa - pb;
+        return basename(a.path).localeCompare(basename(b.path));
+      })
+      .slice(0, MAX_FILES)
+      .map((item) => item.path);
+
+    // 4. Fetch each file's raw content
+    const files: IngestedFile[] = [];
+    for (const path of candidates) {
+      try {
+        const fileRes = await fetch(
+          `${GITHUB_API_BASE}/repos/${repoFullName}/contents/${path}`,
+          {
+            headers: { ...headers, Accept: "application/vnd.github.raw+json" },
+            cache: "no-store",
+          }
+        );
+        if (!fileRes.ok) continue;
+        const raw = await fileRes.text();
+        const content = truncateToLines(raw, MAX_LINES);
+        if (Buffer.byteLength(content, "utf8") <= MAX_FILE_BYTES) {
+          files.push({ name: basename(path), content });
+        }
+      } catch {
+        // skip unreadable files
+      }
+    }
+
+    return { files, fileNames: files.map((f) => f.name) };
+  } catch (err) {
+    console.error("[listing-check/ingest] GitHub fetch failed:", err);
+    return { files: [], fileNames: [] };
+  }
+}
+
 // ── Main export ───────────────────────────────────────────────
 
 /**

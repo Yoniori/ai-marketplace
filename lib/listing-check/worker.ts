@@ -11,7 +11,7 @@
 
 import OpenAI from "openai";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-import { ingestFiles } from "./ingest";
+import { ingestFiles, ingestFromGitHub } from "./ingest";
 import { SYSTEM_PROMPT, buildUserMessage, CHECK_TOOL } from "./prompt";
 import type { CheckReport, CheckOutcome, ListingForCheck } from "./types";
 
@@ -93,11 +93,19 @@ export async function runCheck(
   const MODEL = "gpt-4o-mini";
 
   try {
-    // 1. Ingest files from Storage (graceful — empty on failure)
-    const { files, fileNames } = await ingestFiles(
-      listing.files_path,
-      _adminClient
-    );
+    // 1. Ingest files — ZIP takes priority, GitHub repo as fallback
+    let files: import("./types").IngestedFile[] = [];
+    let fileNames: string[] = [];
+
+    if (listing.files_path) {
+      ({ files, fileNames } = await ingestFiles(listing.files_path, _adminClient));
+    } else if (listing.github_repo_full_name && listing.github_access_token) {
+      console.log("[listing-check/worker] No ZIP — fetching from GitHub repo:", listing.github_repo_full_name);
+      ({ files, fileNames } = await ingestFromGitHub(
+        listing.github_repo_full_name,
+        listing.github_access_token
+      ));
+    }
 
     // 2. Build user message
     const userMessage = buildUserMessage(listing, files);

@@ -84,4 +84,8 @@ export interface ListingForCheck {
   files_path: string | null;
   /** Category name for context, or null if uncategorized. */
   category_name: string | null;
+  /** GitHub repo full name (e.g. "alice/my-project"), if imported from GitHub. */
+  github_repo_full_name?: string | null;
+  /** Decrypted GitHub access token, if imported from GitHub. */
+  github_access_token?: string | null;
 }
