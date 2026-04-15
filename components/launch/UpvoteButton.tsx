@@ -48,23 +48,24 @@ export function UpvoteButton({
       style={
         hasVoted
           ? {
-              background: "#C05A44",
-              border: "0.5px solid #C05A44",
+              background: "#6366F1",
+              border: "1px solid #6366F1",
+              boxShadow: "0 0 12px rgba(99,102,241,0.4)",
             }
           : {
               background: "transparent",
-              border: "0.5px solid rgba(15,15,15,0.18)",
+              border: "1px solid rgba(255,255,255,0.12)",
             }
       }
       title={hasVoted ? "Remove upvote" : "Upvote this product"}
     >
       <ChevronUp
         className="h-3.5 w-3.5"
-        style={{ color: hasVoted ? "#FFFFFF" : "#6B6860" }}
+        style={{ color: hasVoted ? "#FFFFFF" : "#71717A" }}
       />
       <span
-        className="text-[11px] font-semibold leading-none"
-        style={{ color: hasVoted ? "#FFFFFF" : "#6B6860" }}
+        className="text-[11px] font-semibold leading-none font-mono"
+        style={{ color: hasVoted ? "#FFFFFF" : "#71717A" }}
       >
         {count}
       </span>

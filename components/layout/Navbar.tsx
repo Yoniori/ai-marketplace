@@ -10,9 +10,9 @@ type ProfileRow = {
 };
 
 /**
- * Navbar — Editorial luxury navigation.
- * Clean white bar, hairline border, terracotta CTA.
- * No glow, no gradients, no neon.
+ * Navbar — Dark Cyber-Tech navigation.
+ * Pure black background, sharp lines, indigo CTA.
+ * No warmth, no gradients — built for the future.
  */
 export async function Navbar() {
   const supabase = await createClient();
@@ -29,23 +29,26 @@ export async function Navbar() {
 
   return (
     <header
-      className="sticky top-0 z-50 w-full bg-[#FDFCFB]"
-      style={{ borderBottom: "0.5px solid rgba(15,15,15,0.09)" }}
+      className="sticky top-0 z-50 w-full"
+      style={{
+        background: "#000000",
+        borderBottom: "1px solid rgba(255,255,255,0.07)",
+      }}
     >
-      <div className="container flex h-15 items-center justify-between" style={{ height: "3.75rem" }}>
+      <div className="container flex h-14 items-center justify-between">
 
         {/* ── Wordmark ── */}
-        <Link href="/" className="flex items-center gap-2 group">
+        <Link href="/" className="flex items-center gap-2.5 group">
           <span
-            className="inline-flex h-6 w-6 items-center justify-center rounded font-mono text-[11px] font-bold leading-none select-none"
+            className="inline-flex h-6 w-6 items-center justify-center rounded font-mono text-[11px] font-bold leading-none select-none transition-shadow duration-200 group-hover:shadow-glow-sm"
             style={{
-              background: "#C05A44",
+              background: "#6366F1",
               color: "#FFFFFF",
             }}
           >
             ▸
           </span>
-          <span className="font-headline text-sm font-semibold tracking-tight text-[#0F0F0F]">
+          <span className="font-headline text-sm font-semibold tracking-tight text-white">
             Vibe Code Market
           </span>
         </Link>
@@ -54,13 +57,15 @@ export async function Navbar() {
         <nav className="hidden md:flex items-center gap-6">
           <Link
             href="/browse"
-            className="text-sm text-[#6B6860] transition-colors duration-150 hover:text-[#0F0F0F]"
+            className="text-sm transition-colors duration-150 hover:text-white"
+            style={{ color: "#71717A" }}
           >
             Browse
           </Link>
           <Link
             href="/signup"
-            className="text-sm text-[#6B6860] transition-colors duration-150 hover:text-[#0F0F0F]"
+            className="text-sm transition-colors duration-150 hover:text-white"
+            style={{ color: "#71717A" }}
           >
             Sell
           </Link>
@@ -79,14 +84,15 @@ export async function Navbar() {
             <>
               <Link
                 href="/login"
-                className="text-sm text-[#6B6860] transition-colors duration-150 hover:text-[#0F0F0F]"
+                className="text-sm transition-colors duration-150 hover:text-white"
+                style={{ color: "#71717A" }}
               >
                 Sign in
               </Link>
               <Link
                 href="/signup"
-                className="inline-flex h-9 items-center justify-center rounded-md px-5 text-sm font-semibold text-white transition-all duration-150 hover:bg-[#A84D39] active:scale-[0.98] focus-visible:outline-none"
-                style={{ background: "#C05A44" }}
+                className="inline-flex h-9 items-center justify-center rounded-md px-5 text-sm font-semibold text-white transition-all duration-150 hover:bg-[#4F46E5] hover:shadow-glow-sm active:scale-[0.98] focus-visible:outline-none"
+                style={{ background: "#6366F1" }}
               >
                 Get started
               </Link>

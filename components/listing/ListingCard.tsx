@@ -30,14 +30,13 @@ function formatPrice(cents: number, currency = "usd"): string {
 }
 
 /**
- * ListingCard — Editorial luxury product card.
+ * ListingCard — Dark Cyber-Tech product card.
  *
  * Visual language:
- *   • White surface, soft shadow, hairline border
- *   • Playfair Display for title
- *   • Terracotta / Forest / Gold status badges
- *   • Elegant hover: shadow lift + subtle border darkening
- *   • No glows, no gradients, no neon
+ *   • Pure black / #0A0A0A surface, subtle dark border
+ *   • Space Grotesk for title, JetBrains Mono for price/stats
+ *   • Indigo border-glow on hover, slight lift
+ *   • Status badges: cyber HUD style
  */
 export function ListingCard({
   slug,
@@ -64,21 +63,21 @@ export function ListingCard({
       ? "Contact"
       : formatPrice(price_cents, currency);
 
-  // Price badge styles
+  // Price badge styles — cyber minimal
   const priceStyle =
     price_type === "free"
-      ? { color: "#2D4739", border: "0.5px solid rgba(45,71,57,0.30)", bg: "rgba(45,71,57,0.06)" }
+      ? { color: "#22C55E", border: "1px solid rgba(34,197,94,0.25)", bg: "rgba(34,197,94,0.08)" }
       : price_type === "contact"
-      ? { color: "#B89F6E", border: "0.5px solid rgba(184,159,110,0.40)", bg: "rgba(184,159,110,0.08)" }
-      : { color: "#0F0F0F", border: "0.5px solid rgba(15,15,15,0.18)", bg: "rgba(15,15,15,0.04)" };
+      ? { color: "#00F5FF", border: "1px solid rgba(0,245,255,0.25)", bg: "rgba(0,245,255,0.06)" }
+      : { color: "#A1A1AA", border: "1px solid rgba(255,255,255,0.12)", bg: "rgba(255,255,255,0.04)" };
 
-  // Status badge — editorial minimal tags
+  // Status badge — HUD-style tag
   let statusBadge: React.ReactNode = null;
   if (is_trending) {
     statusBadge = (
       <span
-        className="rounded px-2 py-0.5 text-[10px] font-semibold tracking-wide"
-        style={{ color: "#C05A44", border: "0.5px solid rgba(192,90,68,0.30)", background: "rgba(192,90,68,0.06)" }}
+        className="rounded px-2 py-0.5 text-[10px] font-semibold tracking-wide font-mono"
+        style={{ color: "#F59E0B", border: "1px solid rgba(245,158,11,0.30)", background: "rgba(245,158,11,0.08)" }}
       >
         Trending
       </span>
@@ -86,8 +85,8 @@ export function ListingCard({
   } else if (is_new) {
     statusBadge = (
       <span
-        className="rounded px-2 py-0.5 text-[10px] font-semibold tracking-wide"
-        style={{ color: "#2D4739", border: "0.5px solid rgba(45,71,57,0.30)", background: "rgba(45,71,57,0.06)" }}
+        className="rounded px-2 py-0.5 text-[10px] font-semibold tracking-wide font-mono"
+        style={{ color: "#6366F1", border: "1px solid rgba(99,102,241,0.35)", background: "rgba(99,102,241,0.08)" }}
       >
         New
       </span>
@@ -95,8 +94,8 @@ export function ListingCard({
   } else if (review_status === "ready") {
     statusBadge = (
       <span
-        className="rounded px-2 py-0.5 text-[10px] font-semibold tracking-wide"
-        style={{ color: "#B89F6E", border: "0.5px solid rgba(184,159,110,0.35)", background: "rgba(184,159,110,0.07)" }}
+        className="rounded px-2 py-0.5 text-[10px] font-semibold tracking-wide font-mono"
+        style={{ color: "#22C55E", border: "1px solid rgba(34,197,94,0.30)", background: "rgba(34,197,94,0.07)" }}
       >
         Verified
       </span>
@@ -106,10 +105,10 @@ export function ListingCard({
   return (
     <Link
       href={`/listing/${slug}`}
-      className="group relative flex flex-col rounded-xl bg-white transition-all duration-200 hover:shadow-card-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="group relative flex flex-col rounded-xl card-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       style={{
-        border: "0.5px solid rgba(15,15,15,0.09)",
-        boxShadow: "0 1px 3px rgba(15,15,15,0.06), 0 1px 2px rgba(15,15,15,0.04)",
+        background: "#0A0A0A",
+        border: "1px solid rgba(255,255,255,0.07)",
       }}
     >
       {/* ── Thumbnail ── */}
@@ -131,7 +130,10 @@ export function ListingCard({
           <div className="flex items-center gap-2 min-w-0">
             {statusBadge ?? (
               category ? (
-                <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-[#9B9690]">
+                <span
+                  className="text-[10px] font-medium uppercase tracking-[0.12em] font-mono"
+                  style={{ color: "#71717A" }}
+                >
                   {category}
                 </span>
               ) : null
@@ -139,7 +141,7 @@ export function ListingCard({
           </div>
 
           <span
-            className="rounded px-2 py-0.5 text-[11px] font-semibold shrink-0"
+            className="rounded px-2 py-0.5 text-[11px] font-semibold shrink-0 font-mono"
             style={{
               color: priceStyle.color,
               border: priceStyle.border,
@@ -152,11 +154,17 @@ export function ListingCard({
 
         {/* ── Title ── */}
         <div className="flex-1">
-          <h3 className="font-headline text-[0.9375rem] font-semibold leading-snug text-[#0F0F0F] transition-colors duration-150 group-hover:text-[#C05A44] line-clamp-2">
+          <h3
+            className="font-headline text-[0.9375rem] font-semibold leading-snug transition-colors duration-150 group-hover:text-[#818CF8] line-clamp-2"
+            style={{ color: "#FFFFFF" }}
+          >
             {title}
           </h3>
           {tagline && (
-            <p className="mt-1.5 text-xs leading-relaxed text-[#6B6860] line-clamp-2">
+            <p
+              className="mt-1.5 text-xs leading-relaxed line-clamp-2"
+              style={{ color: "#71717A" }}
+            >
               {tagline}
             </p>
           )}
@@ -165,28 +173,28 @@ export function ListingCard({
         {/* ── Meta row ── */}
         <div
           className="flex items-center justify-between pt-3.5"
-          style={{ borderTop: "0.5px solid rgba(15,15,15,0.08)" }}
+          style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
         >
           <div className="flex flex-col gap-0.5 min-w-0">
             {(creator_display_name || creator_username) && (
-              <p className="text-[10px] text-[#9B9690] truncate">
+              <p className="text-[10px] truncate font-mono" style={{ color: "#3F3F46" }}>
                 by {creator_display_name ?? `@${creator_username}`}
               </p>
             )}
             <div className="flex items-center gap-3">
               {avg_rating != null && review_count != null && review_count > 0 && (
-                <span className="flex items-center gap-1 text-[10px] text-[#6B6860]">
-                  <Star className="h-2.5 w-2.5 fill-[#B89F6E] text-[#B89F6E]" />
+                <span className="flex items-center gap-1 text-[10px] font-mono" style={{ color: "#71717A" }}>
+                  <Star className="h-2.5 w-2.5 fill-[#6366F1] text-[#6366F1]" />
                   {avg_rating.toFixed(1)}
-                  <span className="text-[#9B9690]">({review_count})</span>
+                  <span style={{ color: "#3F3F46" }}>({review_count})</span>
                 </span>
               )}
               {(purchase_count == null || purchase_count === 0) ? (
-                <span className="text-[10px] text-[#C05A44]/60">
+                <span className="text-[10px] font-mono" style={{ color: "rgba(99,102,241,0.5)" }}>
                   Be first to buy
                 </span>
               ) : (
-                <span className="text-[10px] text-[#9B9690]">
+                <span className="text-[10px] font-mono" style={{ color: "#3F3F46" }}>
                   {purchase_count} sold
                 </span>
               )}
@@ -194,7 +202,8 @@ export function ListingCard({
           </div>
 
           <ArrowRight
-            className="h-3.5 w-3.5 shrink-0 text-[#9B9690] transition-all duration-150 group-hover:text-[#C05A44] group-hover:translate-x-0.5"
+            className="h-3.5 w-3.5 shrink-0 transition-all duration-150 group-hover:translate-x-0.5"
+            style={{ color: "#3F3F46" }}
           />
         </div>
 

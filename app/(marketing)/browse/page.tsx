@@ -119,21 +119,27 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
 
   // ── 3. Render ─────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-[#FDFCFB]">
+    <div className="min-h-screen" style={{ background: "#000000" }}>
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <div style={{ borderBottom: "0.5px solid rgba(15,15,15,0.09)" }}>
+      <div style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
         <div className="container py-10 md:py-14">
-          <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#9B9690]">
+          <p
+            className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] font-mono"
+            style={{ color: "#3F3F46" }}
+          >
             Marketplace
           </p>
           <h1
-            className="font-headline font-bold tracking-tight text-[#0F0F0F]"
+            className="font-headline font-bold tracking-tight text-white"
             style={{ fontSize: "clamp(2rem, 5vw, 3rem)", lineHeight: 1.05 }}
           >
             Browse Products
           </h1>
-          <p className="mt-3 max-w-lg text-base leading-relaxed text-[#6B6860]">
+          <p
+            className="mt-3 max-w-lg text-base leading-relaxed"
+            style={{ color: "#71717A" }}
+          >
             Apps, automations, agents, and tools built with AI coding tools.
             Instant purchase — immediate access.
           </p>
@@ -207,21 +213,27 @@ function EmptyState({
 
   return (
     <div
-      className="flex flex-col items-center gap-5 rounded-xl px-8 py-24 text-center bg-white"
-      style={{ border: "0.5px solid rgba(15,15,15,0.09)" }}
+      className="flex flex-col items-center gap-5 rounded-xl px-8 py-24 text-center"
+      style={{
+        background: "#0A0A0A",
+        border: "1px solid rgba(255,255,255,0.07)",
+      }}
     >
       <div
         className="flex h-12 w-12 items-center justify-center rounded-xl"
-        style={{ background: "#F5F3F0", border: "0.5px solid rgba(15,15,15,0.10)" }}
+        style={{
+          background: "rgba(99,102,241,0.08)",
+          border: "1px solid rgba(99,102,241,0.20)",
+        }}
       >
-        <Package className="h-5 w-5 text-[#9B9690]" />
+        <Package className="h-5 w-5" style={{ color: "#6366F1" }} />
       </div>
 
       <div className="max-w-xs">
-        <p className="font-headline text-lg font-semibold text-[#0F0F0F]">
+        <p className="font-headline text-lg font-semibold text-white">
           {isFiltered ? "No results found" : "No products yet"}
         </p>
-        <p className="mt-2 text-sm leading-relaxed text-[#6B6860]">
+        <p className="mt-2 text-sm leading-relaxed" style={{ color: "#71717A" }}>
           {searchQuery
             ? `Nothing matched "${searchQuery}". Try a broader search or clear the category filter.`
             : hasCategory
@@ -232,7 +244,7 @@ function EmptyState({
 
       <div
         className="h-px w-12 rounded-full"
-        style={{ background: "rgba(15,15,15,0.12)" }}
+        style={{ background: "rgba(99,102,241,0.3)" }}
       />
     </div>
   );

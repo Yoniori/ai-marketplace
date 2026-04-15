@@ -1,59 +1,64 @@
 // ─── PlatformOverview ─────────────────────────────────────────────────────────
-// Editorial luxury design: white cards, earthy accents, ink typography.
+// Dark Cyber-Tech design: dark cards, indigo/teal/green accents, sharp typography.
 
 const FEATURES = [
   {
     index: "01",
     title: "Discover ready-to-use tools",
     desc:  "Browse apps, automations, agents, and extensions built by real creators. Filter by category, buy instantly, and start using right away.",
-    accent: "#C05A44",          // terracotta
-    accentMuted: "rgba(192,90,68,0.12)",
+    accent: "#6366F1",
+    accentMuted: "rgba(99,102,241,0.12)",
   },
   {
     index: "02",
     title: "List without friction",
     desc:  "No approval queue. No listing fees. Add your product, connect Stripe, and start earning the same day you ship.",
-    accent: "#2D4739",          // forest
-    accentMuted: "rgba(45,71,57,0.10)",
+    accent: "#00F5FF",
+    accentMuted: "rgba(0,245,255,0.10)",
   },
   {
     index: "03",
     title: "Keep 90% of every sale",
     desc:  "A flat 10% platform fee. Every payout goes directly to your Stripe account — no monthly costs, no hidden cuts.",
-    accent: "#B89F6E",          // gold
-    accentMuted: "rgba(184,159,110,0.12)",
+    accent: "#22C55E",
+    accentMuted: "rgba(34,197,94,0.10)",
   },
   {
     index: "04",
     title: "Built for the AI coding era",
     desc:  "Whether you used Claude Code, Cursor, or Lovable to build it — if it solves a real problem, it belongs here.",
-    accent: "#C05A44",          // terracotta
-    accentMuted: "rgba(192,90,68,0.12)",
+    accent: "#6366F1",
+    accentMuted: "rgba(99,102,241,0.12)",
   },
 ] as const;
 
 export function PlatformOverview() {
   return (
     <section
-      className="bg-[#F5F3F0]"
-      style={{ borderBottom: "0.5px solid rgba(15,15,15,0.09)" }}
+      style={{
+        background: "#000000",
+        borderBottom: "1px solid rgba(255,255,255,0.06)",
+      }}
     >
       <div className="container py-20 md:py-28">
 
         {/* ── Header ── */}
         <div className="mb-12 grid grid-cols-1 gap-6 md:grid-cols-2 md:items-end md:gap-16">
           <div>
-            <p className="mb-5 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#9B9690]">
+            <p
+              className="mb-5 text-[11px] font-semibold uppercase tracking-[0.18em] font-mono"
+              style={{ color: "#3F3F46" }}
+            >
               Platform
             </p>
-            <h2 className="font-headline text-[2.25rem] font-bold tracking-tight leading-[1.05] text-[#0F0F0F] md:text-[2.75rem]">
+            <h2 className="font-headline text-[2.25rem] font-bold tracking-tight leading-[1.05] text-white md:text-[2.75rem]">
               Turn ideas into products
             </h2>
           </div>
-          <p className="text-base text-[#6B6860] leading-relaxed md:max-w-[26rem]">
+          <p className="text-base leading-relaxed md:max-w-[26rem]" style={{ color: "#71717A" }}>
             A focused marketplace for apps, automations, agents, and tools built
             with AI coding tools. Discover what others have shipped. List what
-            you've built. No gatekeeping, no upfront costs.
+            you&apos;ve built. No gatekeeping, no upfront costs.
           </p>
         </div>
 
@@ -62,10 +67,13 @@ export function PlatformOverview() {
           {FEATURES.map((f) => (
             <div
               key={f.index}
-              className="group relative flex flex-col gap-5 rounded-xl bg-white p-8 transition-all duration-200 hover:shadow-card-hover"
-              style={{ border: "0.5px solid rgba(15,15,15,0.09)" }}
+              className="group relative flex flex-col gap-5 rounded-xl p-8 card-glow"
+              style={{
+                background: "#0A0A0A",
+                border: "1px solid rgba(255,255,255,0.07)",
+              }}
             >
-              {/* Index with rule */}
+              {/* Index with expanding rule */}
               <div className="flex items-center gap-3">
                 <div
                   className="h-px w-7 flex-none transition-all duration-300 group-hover:w-11"
@@ -80,19 +88,19 @@ export function PlatformOverview() {
               </div>
 
               {/* Title */}
-              <h3 className="font-headline text-base font-semibold text-[#0F0F0F]">
+              <h3 className="font-headline text-base font-semibold text-white">
                 {f.title}
               </h3>
 
               {/* Description */}
-              <p className="text-sm text-[#6B6860] leading-relaxed">
+              <p className="text-sm leading-relaxed" style={{ color: "#71717A" }}>
                 {f.desc}
               </p>
 
               {/* Bottom accent bar */}
               <div
                 className="mt-1 h-px w-7 transition-all duration-300 group-hover:w-14"
-                style={{ background: f.accentMuted.replace("0.12", "0.40") }}
+                style={{ background: f.accent, opacity: 0.4 }}
               />
             </div>
           ))}

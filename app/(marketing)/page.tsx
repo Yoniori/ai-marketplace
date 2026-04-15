@@ -29,21 +29,21 @@ const TOOLS = ["Claude Code", "Cursor", "Lovable", "Bolt", "Replit", "v0"];
 
 export default function HomePage() {
   return (
-    <div className="bg-[#FDFCFB]">
+    <div style={{ background: "#000000" }}>
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <section
         className="relative overflow-hidden"
-        style={{ borderBottom: "0.5px solid rgba(15,15,15,0.09)" }}
+        style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
       >
-        {/* Warm ambient — very subtle, paper-like */}
+        {/* Radial indigo glow — subtle ambient light */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "radial-gradient(ellipse 55% 50% at 70% 0%, rgba(192,90,68,0.05) 0%, transparent 65%), " +
-              "radial-gradient(ellipse 40% 40% at 0% 100%, rgba(45,71,57,0.04) 0%, transparent 60%)",
+              "radial-gradient(ellipse 60% 50% at 70% 0%, rgba(99,102,241,0.08) 0%, transparent 65%), " +
+              "radial-gradient(ellipse 40% 40% at 0% 100%, rgba(0,245,255,0.04) 0%, transparent 60%)",
           }}
         />
 
@@ -54,25 +54,31 @@ export default function HomePage() {
             <div>
 
               {/* Overline */}
-              <p className="mb-7 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#9B9690]">
+              <p
+                className="mb-7 text-[11px] font-semibold uppercase tracking-[0.18em] font-mono"
+                style={{ color: "#3F3F46" }}
+              >
                 Marketplace
               </p>
 
-              {/* Headline — Playfair Display serif */}
+              {/* Headline — Space Grotesk */}
               <h1
-                className="font-headline font-bold leading-[0.95] tracking-[-0.02em] text-[#0F0F0F]"
+                className="font-headline font-bold leading-[0.95] tracking-[-0.02em] text-white"
                 style={{ fontSize: "clamp(3rem, 6.5vw, 5.5rem)" }}
               >
                 The marketplace<br />
                 for{" "}
-                <span className="italic text-[#C05A44]">
+                <span style={{ color: "#6366F1" }}>
                   AI&#8209;built
                 </span>{" "}
                 products.
               </h1>
 
               {/* Sub-copy */}
-              <p className="mt-7 max-w-[32rem] text-[1.0625rem] leading-relaxed text-[#6B6860]">
+              <p
+                className="mt-7 max-w-[32rem] text-[1.0625rem] leading-relaxed"
+                style={{ color: "#71717A" }}
+              >
                 Buy and sell apps, automations, and tools built with Claude Code,
                 Cursor, Lovable, and more.
               </p>
@@ -82,8 +88,11 @@ export default function HomePage() {
                 {TOOLS.map((tool) => (
                   <span
                     key={tool}
-                    className="rounded px-2.5 py-1 text-[11px] text-[#6B6860]"
-                    style={{ border: "0.5px solid rgba(15,15,15,0.15)" }}
+                    className="rounded px-2.5 py-1 text-[11px] font-mono"
+                    style={{
+                      color: "#71717A",
+                      border: "1px solid rgba(255,255,255,0.10)",
+                    }}
                   >
                     {tool}
                   </span>
@@ -94,16 +103,19 @@ export default function HomePage() {
               <div className="mt-9 flex flex-wrap items-center gap-3">
                 <Link
                   href="/browse"
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-md px-7 text-sm font-semibold text-white transition-all duration-150 hover:bg-[#A84D39] active:scale-[0.98] focus-visible:outline-none"
-                  style={{ background: "#C05A44" }}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-md px-7 text-sm font-semibold text-white transition-all duration-150 hover:bg-[#4F46E5] hover:shadow-glow-sm active:scale-[0.98] focus-visible:outline-none"
+                  style={{ background: "#6366F1" }}
                 >
                   Browse products
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
                 <Link
                   href="/signup"
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-md px-7 text-sm font-semibold text-[#0F0F0F] transition-all duration-150 hover:bg-[#F5F3F0] active:scale-[0.98] focus-visible:outline-none"
-                  style={{ border: "0.5px solid rgba(15,15,15,0.20)" }}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-md px-7 text-sm font-semibold transition-all duration-150 active:scale-[0.98] focus-visible:outline-none hover:border-white/20"
+                  style={{
+                    color: "#A1A1AA",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                  }}
                 >
                   Start selling
                 </Link>
@@ -112,18 +124,24 @@ export default function HomePage() {
               {/* Stat bar */}
               <div
                 className="mt-10 grid grid-cols-3 gap-px overflow-hidden rounded-xl"
-                style={{ border: "0.5px solid rgba(15,15,15,0.10)", background: "rgba(15,15,15,0.07)" }}
+                style={{
+                  border: "1px solid rgba(255,255,255,0.07)",
+                  background: "rgba(255,255,255,0.04)",
+                }}
               >
                 {[
                   { label: "Platform fee", value: "10%" },
                   { label: "Listing",      value: "Free" },
                   { label: "Payouts",      value: "Direct" },
                 ].map(({ label, value }) => (
-                  <div key={label} className="bg-[#FDFCFB] px-5 py-4">
-                    <p className="text-[10px] font-medium uppercase tracking-[0.12em] text-[#9B9690]">
+                  <div key={label} style={{ background: "#0A0A0A" }} className="px-5 py-4">
+                    <p
+                      className="text-[10px] font-medium uppercase tracking-[0.12em] font-mono"
+                      style={{ color: "#3F3F46" }}
+                    >
                       {label}
                     </p>
-                    <p className="mt-1 text-sm font-semibold text-[#0F0F0F]">{value}</p>
+                    <p className="mt-1 text-sm font-semibold text-white">{value}</p>
                   </div>
                 ))}
               </div>
@@ -135,19 +153,31 @@ export default function HomePage() {
 
               {/* Panel 1: Build with any tool */}
               <div
-                className="overflow-hidden rounded-xl bg-white"
-                style={{ border: "0.5px solid rgba(15,15,15,0.09)" }}
+                className="overflow-hidden rounded-xl"
+                style={{
+                  background: "#0A0A0A",
+                  border: "1px solid rgba(255,255,255,0.07)",
+                }}
               >
                 <div
                   className="flex items-center justify-between px-5 py-3.5"
-                  style={{ borderBottom: "0.5px solid rgba(15,15,15,0.09)" }}
+                  style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
                 >
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9B9690]">
+                  <p
+                    className="text-[10px] font-semibold uppercase tracking-[0.14em] font-mono"
+                    style={{ color: "#3F3F46" }}
+                  >
                     Build with any tool
                   </p>
                   <div className="flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-[#2D4739]" />
-                    <span className="text-[9px] font-medium uppercase tracking-widest text-[#9B9690]">
+                    <span
+                      className="h-1.5 w-1.5 rounded-full"
+                      style={{ background: "#22C55E", boxShadow: "0 0 4px rgba(34,197,94,0.6)" }}
+                    />
+                    <span
+                      className="text-[9px] font-medium uppercase tracking-widest font-mono"
+                      style={{ color: "#3F3F46" }}
+                    >
                       open
                     </span>
                   </div>
@@ -157,9 +187,12 @@ export default function HomePage() {
                     <div
                       key={tool}
                       className="rounded-lg px-3 py-2.5"
-                      style={{ background: "#F5F3F0", border: "0.5px solid rgba(15,15,15,0.07)" }}
+                      style={{
+                        background: "#111111",
+                        border: "1px solid rgba(255,255,255,0.06)",
+                      }}
                     >
-                      <span className="text-xs font-medium text-[#6B6860]">{tool}</span>
+                      <span className="text-xs font-medium font-mono" style={{ color: "#71717A" }}>{tool}</span>
                     </div>
                   ))}
                 </div>
@@ -167,14 +200,20 @@ export default function HomePage() {
 
               {/* Panel 2: What ships here */}
               <div
-                className="overflow-hidden rounded-xl bg-white"
-                style={{ border: "0.5px solid rgba(15,15,15,0.09)" }}
+                className="overflow-hidden rounded-xl"
+                style={{
+                  background: "#0A0A0A",
+                  border: "1px solid rgba(255,255,255,0.07)",
+                }}
               >
                 <div
                   className="px-5 py-3.5"
-                  style={{ borderBottom: "0.5px solid rgba(15,15,15,0.09)" }}
+                  style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
                 >
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9B9690]">
+                  <p
+                    className="text-[10px] font-semibold uppercase tracking-[0.14em] font-mono"
+                    style={{ color: "#3F3F46" }}
+                  >
                     What ships here
                   </p>
                 </div>
@@ -182,8 +221,12 @@ export default function HomePage() {
                   {CATEGORIES.map(({ label }) => (
                     <span
                       key={label}
-                      className="rounded px-2 py-1 text-[10px] text-[#6B6860]"
-                      style={{ background: "#F5F3F0", border: "0.5px solid rgba(15,15,15,0.09)" }}
+                      className="rounded px-2 py-1 text-[10px] font-mono"
+                      style={{
+                        color: "#71717A",
+                        background: "#111111",
+                        border: "1px solid rgba(255,255,255,0.07)",
+                      }}
                     >
                       {label}
                     </span>
@@ -205,23 +248,29 @@ export default function HomePage() {
 
       {/* ── Browse by category ─────────────────────────────────────────────── */}
       <section
-        className="bg-[#FDFCFB]"
-        style={{ borderBottom: "0.5px solid rgba(15,15,15,0.09)" }}
+        style={{
+          background: "#000000",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+        }}
       >
         <div className="container py-20 md:py-28">
 
           <div className="flex items-end justify-between mb-10">
             <div>
-              <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-[#9B9690]">
+              <p
+                className="mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] font-mono"
+                style={{ color: "#3F3F46" }}
+              >
                 Categories
               </p>
-              <h2 className="font-headline text-[1.875rem] font-bold tracking-tight text-[#0F0F0F] md:text-[2.5rem]">
+              <h2 className="font-headline text-[1.875rem] font-bold tracking-tight text-white md:text-[2.5rem]">
                 Browse by category
               </h2>
             </div>
             <Link
               href="/browse"
-              className="inline-flex items-center gap-1.5 text-sm text-[#6B6860] transition-colors duration-150 hover:text-[#0F0F0F]"
+              className="inline-flex items-center gap-1.5 text-sm transition-colors duration-150 hover:text-white font-mono"
+              style={{ color: "#71717A" }}
             >
               All products
               <ArrowRight className="h-3.5 w-3.5" />
@@ -233,21 +282,33 @@ export default function HomePage() {
               <Link
                 key={cat.slug}
                 href={`/browse?category=${cat.slug}`}
-                className="group flex flex-col rounded-xl bg-white px-6 py-5 transition-all duration-150 hover:shadow-card-hover"
-                style={{ border: "0.5px solid rgba(15,15,15,0.09)" }}
+                className="group flex flex-col rounded-xl px-6 py-5 card-glow"
+                style={{
+                  background: "#0A0A0A",
+                  border: "1px solid rgba(255,255,255,0.07)",
+                }}
               >
-                <span className="text-sm font-semibold text-[#0F0F0F] transition-colors duration-150 group-hover:text-[#C05A44]">
+                <span
+                  className="text-sm font-semibold transition-colors duration-150 group-hover:text-[#818CF8]"
+                  style={{ color: "#FFFFFF" }}
+                >
                   {cat.label}
                 </span>
-                <p className="mt-1 text-[10px] font-medium uppercase tracking-widest text-[#9B9690]">
+                <p
+                  className="mt-1 text-[10px] font-medium uppercase tracking-widest font-mono"
+                  style={{ color: "#3F3F46" }}
+                >
                   {cat.desc}
                 </p>
                 <div className="mt-5 flex items-center justify-between">
                   <div
                     className="h-px w-5 transition-all duration-200 group-hover:w-8"
-                    style={{ background: "rgba(15,15,15,0.18)" }}
+                    style={{ background: "rgba(99,102,241,0.4)" }}
                   />
-                  <ArrowRight className="h-3 w-3 text-[#9B9690] transition-colors duration-150 group-hover:text-[#C05A44]" />
+                  <ArrowRight
+                    className="h-3 w-3 transition-colors duration-150 group-hover:text-[#818CF8]"
+                    style={{ color: "#3F3F46" }}
+                  />
                 </div>
               </Link>
             ))}
@@ -258,42 +319,61 @@ export default function HomePage() {
 
       {/* ── Creator section ────────────────────────────────────────────────── */}
       <section
-        className="relative overflow-hidden bg-[#F5F3F0]"
-        style={{ borderBottom: "0.5px solid rgba(15,15,15,0.09)" }}
+        className="relative overflow-hidden"
+        style={{
+          background: "#050505",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+        }}
       >
+        {/* Subtle indigo ambient */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(ellipse 50% 60% at 0% 50%, rgba(99,102,241,0.05) 0%, transparent 60%)",
+          }}
+        />
         <div className="container relative py-24 md:py-36">
           <div className="grid grid-cols-1 gap-16 md:grid-cols-2 md:items-center md:gap-24">
 
             {/* Left */}
             <div>
-              <p className="mb-7 text-[11px] font-semibold uppercase tracking-[0.18em] text-[#9B9690]">
+              <p
+                className="mb-7 text-[11px] font-semibold uppercase tracking-[0.18em] font-mono"
+                style={{ color: "#3F3F46" }}
+              >
                 For creators
               </p>
               <div
-                className="mb-3 font-headline font-bold leading-[0.85] tracking-[-0.04em] text-[#C05A44]"
-                style={{ fontSize: "clamp(5rem, 14vw, 9rem)" }}
+                className="mb-3 font-headline font-bold leading-[0.85] tracking-[-0.04em]"
+                style={{ fontSize: "clamp(5rem, 14vw, 9rem)", color: "#6366F1" }}
               >
                 90%
               </div>
-              <h2 className="font-headline text-[1.75rem] font-bold tracking-tight leading-[1.1] text-[#0F0F0F] md:text-[2.25rem]">
+              <h2 className="font-headline text-[1.75rem] font-bold tracking-tight leading-[1.1] text-white md:text-[2.25rem]">
                 of every sale.<br />Yours to keep.
               </h2>
-              <p className="mt-5 max-w-[24rem] text-base text-[#6B6860] leading-relaxed">
+              <p
+                className="mt-5 max-w-[24rem] text-base leading-relaxed"
+                style={{ color: "#71717A" }}
+              >
                 List your app, automation, or tool in minutes. No upfront fees,
                 no approval queue. Ship and earn.
               </p>
               <div className="mt-8 flex items-center gap-5">
                 <Link
                   href="/signup"
-                  className="inline-flex h-10 items-center justify-center gap-1.5 rounded-md px-6 text-sm font-semibold text-white transition-all duration-150 hover:bg-[#A84D39] active:scale-[0.98] focus-visible:outline-none"
-                  style={{ background: "#C05A44" }}
+                  className="inline-flex h-10 items-center justify-center gap-1.5 rounded-md px-6 text-sm font-semibold text-white transition-all duration-150 hover:bg-[#4F46E5] hover:shadow-glow-sm active:scale-[0.98] focus-visible:outline-none"
+                  style={{ background: "#6366F1" }}
                 >
                   Start selling free
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
                 <Link
                   href="/browse"
-                  className="text-sm text-[#6B6860] transition-colors duration-150 hover:text-[#0F0F0F]"
+                  className="text-sm transition-colors duration-150 hover:text-white"
+                  style={{ color: "#71717A" }}
                 >
                   Browse products
                 </Link>
@@ -302,19 +382,38 @@ export default function HomePage() {
 
             {/* Right — pricing panel */}
             <div
-              className="overflow-hidden rounded-xl bg-white"
-              style={{ border: "0.5px solid rgba(15,15,15,0.09)", boxShadow: "0 2px 12px rgba(15,15,15,0.06)" }}
+              className="overflow-hidden rounded-xl"
+              style={{
+                background: "#0A0A0A",
+                border: "1px solid rgba(99,102,241,0.20)",
+                boxShadow: "0 0 0 1px rgba(99,102,241,0.06)",
+              }}
             >
               <div
                 className="flex items-center justify-between px-6 py-4"
-                style={{ borderBottom: "0.5px solid rgba(15,15,15,0.09)" }}
+                style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
               >
-                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9B9690]">
+                <p
+                  className="text-[10px] font-semibold uppercase tracking-[0.14em] font-mono"
+                  style={{ color: "#6366F1" }}
+                >
                   creator_terms
                 </p>
                 <div className="flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#2D4739]" />
-                  <span className="text-[9px] font-medium uppercase tracking-widest text-[#9B9690]">live</span>
+                  <span
+                    className="h-1.5 w-1.5 rounded-full"
+                    style={{
+                      background: "#6366F1",
+                      boxShadow: "0 0 6px rgba(99,102,241,0.8)",
+                      animation: "pulse-dot 1.8s ease-in-out infinite",
+                    }}
+                  />
+                  <span
+                    className="text-[9px] font-medium uppercase tracking-widest font-mono"
+                    style={{ color: "#6366F1" }}
+                  >
+                    live
+                  </span>
                 </div>
               </div>
               <div className="px-6 py-1">
@@ -323,19 +422,24 @@ export default function HomePage() {
                     <div
                       key={term}
                       className="flex items-center justify-between py-4"
-                      style={{ borderTop: i > 0 ? "0.5px solid rgba(15,15,15,0.07)" : undefined }}
+                      style={{
+                        borderTop: i > 0 ? "1px solid rgba(255,255,255,0.05)" : undefined,
+                      }}
                     >
-                      <dt className="text-sm text-[#6B6860]">{term}</dt>
-                      <dd className="text-sm font-semibold text-[#0F0F0F]">{detail}</dd>
+                      <dt className="text-sm font-mono" style={{ color: "#71717A" }}>{term}</dt>
+                      <dd className="text-sm font-semibold font-mono text-white">{detail}</dd>
                     </div>
                   ))}
                 </dl>
               </div>
               <div
                 className="px-6 py-4"
-                style={{ borderTop: "0.5px solid rgba(15,15,15,0.09)" }}
+                style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
               >
-                <p className="text-[10px] italic text-[#9B9690]">
+                <p
+                  className="text-[10px] font-mono uppercase tracking-[0.08em]"
+                  style={{ color: "#3F3F46" }}
+                >
                   Ready to publish your first listing
                 </p>
               </div>

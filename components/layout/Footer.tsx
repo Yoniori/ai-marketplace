@@ -22,7 +22,12 @@ const LEGAL_LINKS = [
 
 export function Footer() {
   return (
-    <footer className="bg-[#F5F3F0]" style={{ borderTop: "0.5px solid rgba(15,15,15,0.09)" }}>
+    <footer
+      style={{
+        background: "#0A0A0A",
+        borderTop: "1px solid rgba(255,255,255,0.06)",
+      }}
+    >
       <div className="container py-14 md:py-16">
 
         {/* Main grid */}
@@ -30,25 +35,31 @@ export function Footer() {
 
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="inline-flex items-center gap-2">
+            <Link href="/" className="inline-flex items-center gap-2.5">
               <span
                 className="inline-flex h-6 w-6 items-center justify-center rounded font-mono text-[11px] font-bold leading-none select-none"
-                style={{ background: "#C05A44", color: "#FFFFFF" }}
+                style={{ background: "#6366F1", color: "#FFFFFF" }}
               >
                 ▸
               </span>
-              <span className="font-headline text-sm font-semibold tracking-tight text-[#0F0F0F]">
+              <span className="font-headline text-sm font-semibold tracking-tight text-white">
                 Vibe Code Market
               </span>
             </Link>
-            <p className="mt-4 max-w-[180px] text-xs leading-relaxed text-[#9B9690]">
+            <p
+              className="mt-4 max-w-[180px] text-xs leading-relaxed"
+              style={{ color: "#3F3F46" }}
+            >
               Apps, tools, and automations built with AI coding tools.
             </p>
           </div>
 
           {/* Built with */}
           <div>
-            <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9B9690]">
+            <p
+              className="mb-5 text-[10px] font-semibold uppercase tracking-[0.14em] font-mono"
+              style={{ color: "#3F3F46" }}
+            >
               Built with
             </p>
             <ul className="space-y-3">
@@ -56,7 +67,8 @@ export function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-xs text-[#6B6860] transition-colors duration-150 hover:text-[#0F0F0F]"
+                    className="text-xs transition-colors duration-150 hover:text-white"
+                    style={{ color: "#71717A" }}
                   >
                     {link.label}
                   </Link>
@@ -67,7 +79,10 @@ export function Footer() {
 
           {/* Marketplace */}
           <div>
-            <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9B9690]">
+            <p
+              className="mb-5 text-[10px] font-semibold uppercase tracking-[0.14em] font-mono"
+              style={{ color: "#3F3F46" }}
+            >
               Marketplace
             </p>
             <ul className="space-y-3">
@@ -75,7 +90,8 @@ export function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-xs text-[#6B6860] transition-colors duration-150 hover:text-[#0F0F0F]"
+                    className="text-xs transition-colors duration-150 hover:text-white"
+                    style={{ color: "#71717A" }}
                   >
                     {link.label}
                   </Link>
@@ -86,7 +102,10 @@ export function Footer() {
 
           {/* Legal */}
           <div>
-            <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9B9690]">
+            <p
+              className="mb-5 text-[10px] font-semibold uppercase tracking-[0.14em] font-mono"
+              style={{ color: "#3F3F46" }}
+            >
               Legal
             </p>
             <ul className="space-y-3">
@@ -94,7 +113,8 @@ export function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-xs text-[#6B6860] transition-colors duration-150 hover:text-[#0F0F0F]"
+                    className="text-xs transition-colors duration-150 hover:text-white"
+                    style={{ color: "#71717A" }}
                   >
                     {link.label}
                   </Link>
@@ -108,12 +128,12 @@ export function Footer() {
         {/* Bottom bar */}
         <div
           className="mt-14 flex items-center justify-between pt-6"
-          style={{ borderTop: "0.5px solid rgba(15,15,15,0.09)" }}
+          style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
         >
-          <p className="text-[11px] text-[#9B9690]">
+          <p className="text-[11px] font-mono" style={{ color: "#3F3F46" }}>
             © {new Date().getFullYear()} Vibe Code Market
           </p>
-          <p className="text-[11px] text-[#9B9690]">
+          <p className="text-[11px] font-mono" style={{ color: "#3F3F46" }}>
             10% fee · free to list
           </p>
         </div>

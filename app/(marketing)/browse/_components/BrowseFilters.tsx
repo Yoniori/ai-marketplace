@@ -1,8 +1,8 @@
 "use client";
 
 /**
- * BrowseFilters — Editorial luxury filter sidebar.
- * Active state: terracotta. Idle: warm white. No neon.
+ * BrowseFilters — Dark Cyber-Tech filter sidebar.
+ * Active state: indigo glow. Idle: dark surface with subtle border.
  */
 
 import { useRouter, usePathname } from "next/navigation";
@@ -40,15 +40,15 @@ const TOOLS = [
 ];
 
 const tagActive: React.CSSProperties = {
-  background: "rgba(192,90,68,0.08)",
-  border: "0.5px solid rgba(192,90,68,0.40)",
-  color: "#C05A44",
+  background: "rgba(99,102,241,0.12)",
+  border: "1px solid rgba(99,102,241,0.40)",
+  color: "#818CF8",
 };
 
 const tagIdle: React.CSSProperties = {
-  background: "#FFFFFF",
-  border: "0.5px solid rgba(15,15,15,0.15)",
-  color: "#6B6860",
+  background: "#0A0A0A",
+  border: "1px solid rgba(255,255,255,0.10)",
+  color: "#71717A",
 };
 
 export function BrowseFilters({
@@ -108,33 +108,42 @@ export function BrowseFilters({
     >
       {/* ── Search ── */}
       <div
-        className="flex items-center gap-3 rounded-lg px-3.5 py-2.5 bg-white"
-        style={{ border: "0.5px solid rgba(15,15,15,0.15)" }}
+        className="flex items-center gap-3 rounded-lg px-3.5 py-2.5"
+        style={{
+          background: "#0A0A0A",
+          border: "1px solid rgba(255,255,255,0.10)",
+        }}
       >
-        <Search className="h-3.5 w-3.5 shrink-0 text-[#9B9690]" />
+        <Search className="h-3.5 w-3.5 shrink-0" style={{ color: "#3F3F46" }} />
         <input
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           placeholder="Search products…"
-          className="flex-1 bg-transparent text-sm text-[#0F0F0F] placeholder:text-[#9B9690] outline-none"
+          className="flex-1 bg-transparent text-sm text-white placeholder:text-[#3F3F46] outline-none font-mono"
         />
         {inputValue && (
           <button onClick={() => setInputValue("")} aria-label="Clear search">
-            <X className="h-3.5 w-3.5 text-[#9B9690] hover:text-[#0F0F0F] transition-colors" />
+            <X
+              className="h-3.5 w-3.5 transition-colors"
+              style={{ color: "#3F3F46" }}
+            />
           </button>
         )}
       </div>
 
       {/* ── Category ── */}
       <div>
-        <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9B9690]">
+        <p
+          className="mb-3 text-[10px] font-semibold uppercase tracking-[0.14em] font-mono"
+          style={{ color: "#3F3F46" }}
+        >
           Category
         </p>
         <div className="flex flex-wrap gap-1.5">
           <button
             onClick={() => handleCategory(null)}
-            className="rounded px-3 py-1.5 text-[11px] font-medium transition-all duration-150"
+            className="rounded px-3 py-1.5 text-[11px] font-medium transition-all duration-150 font-mono"
             style={activeCategorySlug === null ? tagActive : tagIdle}
           >
             All
@@ -143,7 +152,7 @@ export function BrowseFilters({
             <button
               key={cat.id}
               onClick={() => handleCategory(cat.slug)}
-              className="rounded px-3 py-1.5 text-[11px] font-medium transition-all duration-150"
+              className="rounded px-3 py-1.5 text-[11px] font-medium transition-all duration-150 font-mono"
               style={activeCategorySlug === cat.slug ? tagActive : tagIdle}
             >
               {cat.icon ? `${cat.icon} ` : ""}{cat.name}
@@ -154,7 +163,10 @@ export function BrowseFilters({
 
       {/* ── Built With ── */}
       <div>
-        <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9B9690]">
+        <p
+          className="mb-3 text-[10px] font-semibold uppercase tracking-[0.14em] font-mono"
+          style={{ color: "#3F3F46" }}
+        >
           Built With
         </p>
         <div className="flex flex-wrap gap-1.5">
@@ -162,7 +174,7 @@ export function BrowseFilters({
             <button
               key={label}
               onClick={() => handleBuiltWith(activeBuiltWith === label ? null : label)}
-              className="rounded px-3 py-1.5 text-[11px] font-medium transition-all duration-150"
+              className="rounded px-3 py-1.5 text-[11px] font-medium transition-all duration-150 font-mono"
               style={activeBuiltWith === label ? tagActive : tagIdle}
             >
               <span className="mr-1 opacity-50">{icon}</span>
@@ -173,15 +185,15 @@ export function BrowseFilters({
       </div>
 
       {/* ── Count ── */}
-      <p className="text-[11px] text-[#9B9690]">
+      <p className="text-[11px] font-mono" style={{ color: "#3F3F46" }}>
         {totalCount === 0 ? (
           "No products found"
         ) : (
           <>
-            <span className="font-semibold text-[#C05A44]">{totalCount}</span>
+            <span className="font-semibold" style={{ color: "#6366F1" }}>{totalCount}</span>
             {` product${totalCount === 1 ? "" : "s"}`}
             {searchQuery && (
-              <> for &ldquo;<span className="text-[#0F0F0F]">{searchQuery}</span>&rdquo;</>
+              <> for &ldquo;<span className="text-white">{searchQuery}</span>&rdquo;</>
             )}
           </>
         )}

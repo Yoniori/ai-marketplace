@@ -68,29 +68,42 @@ export async function LaunchedToday() {
   if (entries.length === 0) return null;
 
   return (
-    <section className="bg-[#F5F3F0]" style={{ borderBottom: "0.5px solid rgba(15,15,15,0.09)" }}>
+    <section
+      style={{
+        background: "#050505",
+        borderBottom: "1px solid rgba(255,255,255,0.06)",
+      }}
+    >
       <div className="container py-16 md:py-20">
 
         {/* Header */}
         <div className="mb-8 flex items-end justify-between">
           <div>
             <div className="mb-2 flex items-center gap-2">
-              {/* Live indicator — ink dot, no glow */}
+              {/* Live pulsing indicator */}
               <span
                 className="h-1.5 w-1.5 rounded-full"
-                style={{ background: "#C05A44" }}
+                style={{
+                  background: "#6366F1",
+                  boxShadow: "0 0 6px rgba(99,102,241,0.8)",
+                  animation: "pulse-dot 1.8s ease-in-out infinite",
+                }}
               />
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#6B6860]">
+              <p
+                className="text-[10px] font-semibold uppercase tracking-[0.14em] font-mono"
+                style={{ color: "#71717A" }}
+              >
                 Live today
               </p>
             </div>
-            <h2 className="font-headline text-[1.75rem] font-bold tracking-tight text-[#0F0F0F] md:text-[2.25rem]">
+            <h2 className="font-headline text-[1.75rem] font-bold tracking-tight text-white md:text-[2.25rem]">
               Launched Today
             </h2>
           </div>
           <Link
             href="/browse"
-            className="text-sm text-[#6B6860] transition-colors duration-150 hover:text-[#0F0F0F]"
+            className="text-sm transition-colors duration-150 hover:text-white font-mono"
+            style={{ color: "#71717A" }}
           >
             All products →
           </Link>
@@ -103,15 +116,17 @@ export async function LaunchedToday() {
             return (
               <div
                 key={entry.listing_id}
-                className="flex items-center gap-4 rounded-xl bg-white px-5 py-4 transition-all duration-150 hover:shadow-card"
-                style={{ border: "0.5px solid rgba(15,15,15,0.09)" }}
+                className="flex items-center gap-4 rounded-xl px-5 py-4 card-glow"
+                style={{
+                  background: "#0A0A0A",
+                  border: "1px solid rgba(255,255,255,0.07)",
+                }}
               >
                 {/* Rank */}
                 <span
-                  className="w-5 shrink-0 text-right text-sm font-bold"
+                  className="w-5 shrink-0 text-right text-sm font-bold font-mono"
                   style={{
-                    fontFamily: "var(--font-mono, monospace)",
-                    color: idx === 0 ? "#C05A44" : "rgba(15,15,15,0.25)",
+                    color: idx === 0 ? "#6366F1" : "rgba(255,255,255,0.15)",
                   }}
                 >
                   {idx + 1}
@@ -121,7 +136,7 @@ export async function LaunchedToday() {
                 {entry.listing.thumbnail_url ? (
                   <div
                     className="h-10 w-10 shrink-0 rounded-lg overflow-hidden"
-                    style={{ border: "0.5px solid rgba(15,15,15,0.09)" }}
+                    style={{ border: "1px solid rgba(255,255,255,0.07)" }}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -134,11 +149,11 @@ export async function LaunchedToday() {
                   <div
                     className="h-10 w-10 shrink-0 rounded-lg flex items-center justify-center"
                     style={{
-                      background: "rgba(192,90,68,0.06)",
-                      border: "0.5px solid rgba(192,90,68,0.15)",
+                      background: "rgba(99,102,241,0.08)",
+                      border: "1px solid rgba(99,102,241,0.20)",
                     }}
                   >
-                    <span className="text-[10px] font-bold text-[#C05A44]/50">
+                    <span className="text-[10px] font-bold font-mono" style={{ color: "rgba(99,102,241,0.6)" }}>
                       {entry.listing.title.slice(0, 2).toUpperCase()}
                     </span>
                   </div>
@@ -146,16 +161,22 @@ export async function LaunchedToday() {
 
                 {/* Title + tagline */}
                 <Link href={`/listing/${entry.listing.slug}`} className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-[#0F0F0F] transition-colors duration-150 hover:text-[#C05A44]">
+                  <p
+                    className="truncate text-sm font-semibold transition-colors duration-150 hover:text-[#818CF8]"
+                    style={{ color: "#FFFFFF" }}
+                  >
                     {entry.listing.title}
                   </p>
-                  <p className="mt-0.5 truncate text-xs text-[#9B9690]">
+                  <p className="mt-0.5 truncate text-xs" style={{ color: "#3F3F46" }}>
                     {entry.listing.tagline}
                   </p>
                 </Link>
 
                 {/* Price */}
-                <span className="hidden shrink-0 text-xs text-[#6B6860] sm:block">
+                <span
+                  className="hidden shrink-0 text-xs sm:block font-mono"
+                  style={{ color: "#71717A" }}
+                >
                   {entry.listing.price_type === "free" ? "Free" : priceLabel}
                 </span>
 

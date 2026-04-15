@@ -53,45 +53,43 @@ const config: Config = {
           foreground: "hsl(var(--card-foreground))",
         },
 
-        // ── Editorial Luxury design tokens ─────────────────────────────────
-        // Earthy palette replacing the neon-dark Stitch system
+        // ── Dark Cyber-Tech design tokens ──────────────────────────────────
+        // Electric Indigo — primary accent
+        "indigo":       "#6366F1",
+        "indigo-light": "#818CF8",
+        "indigo-dim":   "rgba(99,102,241,0.15)",
+        "indigo-glow":  "rgba(99,102,241,0.25)",
 
-        // Terracotta — primary accent
-        "terra":         "#C05A44",
-        "terra-light":   "#E8836F",
-        "terra-muted":   "rgba(192,90,68,0.12)",
+        // Cyber Teal — secondary accent (use sparingly)
+        "cyber":        "#00F5FF",
+        "cyber-dim":    "rgba(0,245,255,0.10)",
 
-        // Forest Green — secondary accent
-        "forest":        "#2D4739",
-        "forest-light":  "#3D6150",
-        "forest-muted":  "rgba(45,71,57,0.10)",
+        // Dark surfaces
+        "void":         "#000000",
+        "surface-0":    "#000000",
+        "surface-1":    "#0A0A0A",
+        "surface-2":    "#111111",
+        "surface-3":    "#1A1A1A",
 
-        // Muted Gold — tertiary accent
-        "gold":          "#B89F6E",
-        "gold-muted":    "rgba(184,159,110,0.15)",
+        // Text scale
+        "text-1":       "#FFFFFF",
+        "text-2":       "#A1A1AA",
+        "text-3":       "#71717A",
+        "text-4":       "#3F3F46",
 
-        // Ink scale
-        "ink":           "#0F0F0F",
-        "ink-secondary": "#6B6860",
-        "ink-tertiary":  "#9B9690",
-        "ink-faint":     "rgba(15,15,15,0.35)",
+        // Status colors
+        "status-green": "#22C55E",
+        "status-amber": "#F59E0B",
+        "status-red":   "#EF4444",
 
-        // Surfaces
-        "surface":       "#FDFCFB",
-        "surface-warm":  "#F5F3F0",
-        "surface-card":  "#FFFFFF",
-
-        // Borders
-        "hairline":      "rgba(15,15,15,0.09)",
-        "hairline-mid":  "rgba(15,15,15,0.15)",
-
-        // Legacy compatibility aliases (used by dashboard, auth pages etc.)
-        "on-surface":          "#0F0F0F",
-        "on-surface-variant":  "#6B6860",
-        "outline-variant":     "rgba(15,15,15,0.12)",
-        "surface-container":   "#F5F3F0",
-        "error":               "#C0392B",
-        "tertiary":            "#2D4739",
+        // Legacy compatibility aliases used by dashboard, auth, etc.
+        "on-surface":          "#FFFFFF",
+        "on-surface-variant":  "#A1A1AA",
+        "outline-variant":     "rgba(255,255,255,0.08)",
+        "surface-container":   "#0A0A0A",
+        "surface-card":        "#0A0A0A",
+        "error":               "#EF4444",
+        "tertiary":            "#00F5FF",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -102,10 +100,10 @@ const config: Config = {
         // Inter — body and UI
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
         body: ["var(--font-sans)", "system-ui", "sans-serif"],
-        // Playfair Display — editorial headlines
-        headline: ["var(--font-headline)", "Playfair Display", "Georgia", "serif"],
+        // Space Grotesk — sharp cyber headlines
+        headline: ["var(--font-headline)", "Space Grotesk", "system-ui", "sans-serif"],
         label:    ["var(--font-sans)", "system-ui", "sans-serif"],
-        // JetBrains Mono — code and labels
+        // JetBrains Mono — code and technical details
         mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", "monospace"],
       },
       keyframes: {
@@ -125,18 +123,32 @@ const config: Config = {
           from: { opacity: "0" },
           to:   { opacity: "1" },
         },
+        "pulse-dot": {
+          "0%, 100%": { opacity: "1", transform: "scale(1)" },
+          "50%":      { opacity: "0.4", transform: "scale(0.8)" },
+        },
+        "glow-pulse": {
+          "0%, 100%": { boxShadow: "0 0 6px rgba(99,102,241,0.4)" },
+          "50%":      { boxShadow: "0 0 18px rgba(99,102,241,0.8)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up":   "accordion-up 0.2s ease-out",
         "enter":          "enter 0.25s ease-out",
         "fade-in":        "fade-in 0.2s ease-out",
+        "pulse-dot":      "pulse-dot 1.8s ease-in-out infinite",
+        "glow-pulse":     "glow-pulse 2s ease-in-out infinite",
       },
       boxShadow: {
-        // Editorial soft shadows
-        "card":  "0 1px 3px rgba(15,15,15,0.06), 0 1px 2px rgba(15,15,15,0.04)",
-        "card-hover": "0 4px 16px rgba(15,15,15,0.10), 0 1px 4px rgba(15,15,15,0.06)",
-        "float": "0 8px 32px rgba(15,15,15,0.12), 0 2px 8px rgba(15,15,15,0.06)",
+        // Cyber glow shadows
+        "glow-sm":    "0 0 8px rgba(99,102,241,0.35)",
+        "glow":       "0 0 16px rgba(99,102,241,0.40), 0 0 4px rgba(99,102,241,0.20)",
+        "glow-lg":    "0 0 32px rgba(99,102,241,0.35), 0 0 8px rgba(99,102,241,0.20)",
+        "glow-teal":  "0 0 12px rgba(0,245,255,0.30)",
+        "card":       "0 1px 3px rgba(0,0,0,0.6)",
+        "card-hover": "0 0 0 1px rgba(99,102,241,0.40), 0 4px 24px rgba(99,102,241,0.15)",
+        "float":      "0 8px 32px rgba(0,0,0,0.8)",
       },
     },
   },

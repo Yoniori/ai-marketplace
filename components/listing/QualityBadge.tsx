@@ -1,12 +1,12 @@
 /**
- * QualityBadge — Gatekeeper quality scores in editorial style.
+ * QualityBadge — Gatekeeper quality scores as a HUD element.
  *
  * Two variants:
- *   compact — physical dial arc (terracotta/forest/ink) for cards
- *   full    — score breakdown panel for listing detail page
+ *   compact — arc dial for cards (indigo/green/red on dark)
+ *   full    — HUD panel with score breakdown + pulsing status dot
  *
- * Design: feels like a physical instrument dial, not a neon HUD.
- * No glows, no gradients — clean ink + earthy accent palette.
+ * Design: feels like a system monitor / mission-critical dashboard.
+ * Monospace font, sharp corners, thin glowing border, pulsing status indicator.
  */
 
 interface QualityBadgeProps {
@@ -19,12 +19,18 @@ interface QualityBadgeProps {
 }
 
 function scoreColor(score: number): string {
-  if (score >= 8) return "#2D4739";   // forest — excellent
-  if (score >= 6) return "#B89F6E";   // gold — acceptable
-  return "#C05A44";                    // terracotta — needs work
+  if (score >= 8) return "#22C55E";   // green — excellent
+  if (score >= 6) return "#F59E0B";   // amber — acceptable
+  return "#EF4444";                    // red — needs work
 }
 
-function ScoreCircle({ score, size = 44 }: { score: number; size?: number }) {
+function scoreLabel(score: number): string {
+  if (score >= 8) return "OK";
+  if (score >= 6) return "WARN";
+  return "FAIL";
+}
+
+function ScoreArc({ score, size = 44 }: { score: number; size?: number }) {
   const color = scoreColor(score);
   const strokeWidth = size >= 64 ? 3 : 2;
   const radius = (size - strokeWidth * 2) / 2;
@@ -42,16 +48,16 @@ function ScoreCircle({ score, size = 44 }: { score: number; size?: number }) {
           height={size}
           style={{ position: "absolute", top: 0, left: 0, transform: "rotate(-90deg)" }}
         >
-          {/* Track — warm paper tone */}
+          {/* Track */}
           <circle
             cx={center}
             cy={center}
             r={radius}
             fill="none"
-            stroke="rgba(15,15,15,0.08)"
+            stroke="rgba(255,255,255,0.06)"
             strokeWidth={strokeWidth}
           />
-          {/* Fill — earthy color */}
+          {/* Fill */}
           <circle
             cx={center}
             cy={center}
@@ -77,7 +83,7 @@ function ScoreCircle({ score, size = 44 }: { score: number; size?: number }) {
               fontFamily: "var(--font-mono, monospace)",
               fontSize: size >= 56 ? "0.75rem" : "0.6rem",
               fontWeight: 700,
-              color: "#0F0F0F",
+              color: "#FFFFFF",
               lineHeight: 1,
             }}
           >
@@ -87,12 +93,12 @@ function ScoreCircle({ score, size = 44 }: { score: number; size?: number }) {
       </div>
       <span
         style={{
-          fontFamily: "var(--font-sans, sans-serif)",
-          fontSize: "0.5rem",
+          fontFamily: "var(--font-mono, monospace)",
+          fontSize: "0.45rem",
           fontWeight: 600,
-          letterSpacing: "0.1em",
+          letterSpacing: "0.15em",
           textTransform: "uppercase",
-          color: "#9B9690",
+          color: "#3F3F46",
         }}
       >
         Score
@@ -104,36 +110,57 @@ function ScoreCircle({ score, size = 44 }: { score: number; size?: number }) {
 function ScoreBar({ label, score }: { label: string; score: number }) {
   const color = scoreColor(score);
   const pct = Math.min((score / 10) * 100, 100);
+  const status = scoreLabel(score);
 
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between">
         <span
           style={{
-            fontFamily: "var(--font-sans, sans-serif)",
-            fontSize: "0.6875rem",
-            color: "#6B6860",
+            fontFamily: "var(--font-mono, monospace)",
+            fontSize: "0.6rem",
+            fontWeight: 500,
+            color: "#71717A",
+            textTransform: "uppercase",
+            letterSpacing: "0.10em",
           }}
         >
           {label}
         </span>
-        <span
-          style={{
-            fontFamily: "var(--font-mono, monospace)",
-            fontSize: "0.6875rem",
-            fontWeight: 600,
-            color,
-          }}
-        >
-          {score}/10
-        </span>
+        <div className="flex items-center gap-2">
+          <span
+            style={{
+              fontFamily: "var(--font-mono, monospace)",
+              fontSize: "0.5rem",
+              fontWeight: 600,
+              color,
+              border: `1px solid ${color}40`,
+              background: `${color}12`,
+              padding: "1px 5px",
+              borderRadius: "2px",
+              letterSpacing: "0.08em",
+            }}
+          >
+            {status}
+          </span>
+          <span
+            style={{
+              fontFamily: "var(--font-mono, monospace)",
+              fontSize: "0.6875rem",
+              fontWeight: 700,
+              color,
+            }}
+          >
+            {score}/10
+          </span>
+        </div>
       </div>
       {/* Track */}
       <div
         style={{
-          height: 3,
-          borderRadius: 2,
-          background: "rgba(15,15,15,0.07)",
+          height: 2,
+          borderRadius: 1,
+          background: "rgba(255,255,255,0.06)",
           overflow: "hidden",
         }}
       >
@@ -141,9 +168,10 @@ function ScoreBar({ label, score }: { label: string; score: number }) {
           style={{
             width: `${pct}%`,
             height: "100%",
-            borderRadius: 2,
+            borderRadius: 1,
             background: color,
-            transition: "width 0.5s ease",
+            transition: "width 0.6s cubic-bezier(0.25,0.46,0.45,0.94)",
+            boxShadow: `0 0 6px ${color}60`,
           }}
         />
       </div>
@@ -156,26 +184,49 @@ export function QualityBadge({
   securityScore,
   completenessScore,
   clarityScore,
+  outcome,
   variant,
 }: QualityBadgeProps) {
   if (variant === "compact") {
-    return <ScoreCircle score={overallScore} size={44} />;
+    return <ScoreArc score={overallScore} size={44} />;
   }
 
-  // Full variant
+  // Outcome → status dot color
+  const dotColor =
+    outcome === "approved" ? "#22C55E" :
+    outcome === "flagged"  ? "#EF4444" :
+    "#F59E0B";
+
+  // Full variant — HUD panel
   return (
-    <div className="flex flex-col gap-5">
+    <div
+      className="flex flex-col gap-5 rounded-xl p-5"
+      style={{
+        background: "#0A0A0A",
+        border: "1px solid rgba(99,102,241,0.20)",
+        boxShadow: "0 0 0 1px rgba(99,102,241,0.06), inset 0 1px 0 rgba(255,255,255,0.03)",
+      }}
+    >
       {/* Header row */}
       <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          {/* Verification mark — clean ink shield */}
+        <div className="flex items-center gap-2.5">
+          {/* Pulsing status dot */}
+          <span
+            className="h-2 w-2 rounded-full"
+            style={{
+              background: dotColor,
+              boxShadow: `0 0 6px ${dotColor}`,
+              animation: "pulse-dot 1.8s ease-in-out infinite",
+            }}
+          />
+          {/* Shield icon */}
           <svg
-            width="15"
-            height="15"
+            width="13"
+            height="13"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="#6B6860"
-            strokeWidth="1.75"
+            stroke="#6366F1"
+            strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
           >
@@ -183,25 +234,25 @@ export function QualityBadge({
           </svg>
           <span
             style={{
-              fontFamily: "var(--font-sans, sans-serif)",
-              fontSize: "0.6875rem",
+              fontFamily: "var(--font-mono, monospace)",
+              fontSize: "0.6rem",
               fontWeight: 600,
-              color: "#6B6860",
+              color: "#6366F1",
               textTransform: "uppercase",
-              letterSpacing: "0.10em",
+              letterSpacing: "0.14em",
             }}
           >
             Quality Report
           </span>
         </div>
-        <ScoreCircle score={overallScore} size={52} />
+        <ScoreArc score={overallScore} size={52} />
       </div>
 
       {/* Divider */}
-      <div style={{ height: "0.5px", background: "rgba(15,15,15,0.09)" }} />
+      <div style={{ height: "1px", background: "rgba(255,255,255,0.06)" }} />
 
       {/* Score breakdown */}
-      <div className="flex flex-col gap-3.5">
+      <div className="flex flex-col gap-4">
         <ScoreBar label="Security" score={securityScore} />
         <ScoreBar label="Completeness" score={completenessScore} />
         <ScoreBar label="Clarity" score={clarityScore} />
@@ -210,11 +261,12 @@ export function QualityBadge({
       {/* Disclaimer */}
       <p
         style={{
-          fontFamily: "var(--font-sans, sans-serif)",
-          fontSize: "0.625rem",
-          color: "#9B9690",
+          fontFamily: "var(--font-mono, monospace)",
+          fontSize: "0.55rem",
+          color: "#3F3F46",
           textAlign: "center",
-          fontStyle: "italic",
+          letterSpacing: "0.05em",
+          textTransform: "uppercase",
         }}
       >
         Automated analysis — not a security audit

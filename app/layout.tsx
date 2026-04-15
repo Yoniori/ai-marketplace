@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Playfair_Display, JetBrains_Mono } from "next/font/google";
+import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -7,11 +7,10 @@ const inter = Inter({
   variable: "--font-sans",
 });
 
-// Playfair Display — editorial serif for headlines
-const playfair = Playfair_Display({
+// Space Grotesk — sharp, modern cyber headlines
+const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
-  style: ["normal", "italic"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-headline",
 });
 
@@ -31,7 +30,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#FDFCFB",
+  themeColor: "#000000",
 };
 
 export default function RootLayout({
@@ -40,8 +39,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className={`${inter.variable} ${playfair.variable} ${jetbrainsMono.variable} min-h-screen bg-background font-sans antialiased`}>
+    <html lang="en" className="dark">
+      <body
+        className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} min-h-screen bg-background font-sans antialiased`}
+      >
         {children}
       </body>
     </html>
