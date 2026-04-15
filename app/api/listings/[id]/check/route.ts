@@ -56,11 +56,11 @@ export async function POST(
   const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
   const oaiKey  = process.env.OPENAI_API_KEY ?? "";
   console.log("[POST /check] CHECKPOINT 1 — env", {
-    NEXT_PUBLIC_SUPABASE_URL:      process.env.NEXT_PUBLIC_SUPABASE_URL ?? "MISSING",
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: anonKey  ? anonKey.slice(0, 22)  + "…" : "MISSING",
-    SUPABASE_SERVICE_ROLE_KEY:     svcKey   ? svcKey.slice(0, 22)   + "…" : "MISSING",
-    OPENAI_API_KEY:                oaiKey   ? oaiKey.slice(0, 10)   + "…" : "MISSING",
-    svcKey_length:                 svcKey.length,
+    NEXT_PUBLIC_SUPABASE_URL:      !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: !!anonKey,
+    SUPABASE_SERVICE_ROLE_KEY:     !!svcKey,
+    svcKey_length:                 svcKey.length,   // safe: reveals nothing about the value
+    OPENAI_API_KEY:                !!oaiKey,
     NODE_ENV:                      process.env.NODE_ENV,
   });
 

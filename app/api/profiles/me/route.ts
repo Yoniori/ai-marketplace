@@ -46,25 +46,25 @@ export async function PATCH(request: NextRequest) {
     website_url: (v) => {
       if (v === null) return null;
       if (typeof v !== "string") return "website_url must be a string";
-      if (v && !/^https?:\/\/.+/.test(v)) return "website_url must start with http:// or https://";
+      if (v && !/^https:\/\/.+/.test(v)) return "website_url must start with https://";
       return null;
     },
     twitter_url: (v) => {
       if (v === null) return null;
       if (typeof v !== "string") return "twitter_url must be a string";
-      if (v && !/^https?:\/\/.+/.test(v)) return "twitter_url must start with http:// or https://";
+      if (v && !/^https:\/\/.+/.test(v)) return "twitter_url must start with https://";
       return null;
     },
     github_url: (v) => {
       if (v === null) return null;
       if (typeof v !== "string") return "github_url must be a string";
-      if (v && !/^https?:\/\/.+/.test(v)) return "github_url must start with http:// or https://";
+      if (v && !/^https:\/\/.+/.test(v)) return "github_url must start with https://";
       return null;
     },
     avatar_url: (v) => {
       if (v === null) return null;
       if (typeof v !== "string") return "avatar_url must be a string";
-      if (v && !/^https?:\/\/.+/.test(v)) return "avatar_url must start with http:// or https://";
+      if (v && !/^https:\/\/.+/.test(v)) return "avatar_url must start with https://";
       return null;
     },
     username: (v) => {

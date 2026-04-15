@@ -2,13 +2,28 @@ import { NextResponse } from "next/server";
 import OpenAI from "openai";
 import { createClient } from "@/lib/supabase/server";
 
+const MAX_QUERY_LENGTH = 300; // prevent prompt injection / token abuse
+
 export async function POST(request: Request) {
+  // ── Auth ──────────────────────────────────────────────────────
+  // Require a logged-in user — unauthenticated callers should not be
+  // able to trigger OpenAI calls and exhaust the project's API budget.
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { query } = (await request.json()) as { query?: string };
   if (!query?.trim()) {
     return NextResponse.json({ error: "query is required" }, { status: 400 });
   }
-
-  const supabase = await createClient();
+  if (query.length > MAX_QUERY_LENGTH) {
+    return NextResponse.json(
+      { error: `query must be ${MAX_QUERY_LENGTH} characters or fewer` },
+      { status: 400 }
+    );
+  }
   // Fetch up to 40 published listings for context
   const { data: listings } = await (supabase as any)
     .from("listings")

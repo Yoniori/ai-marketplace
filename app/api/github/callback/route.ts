@@ -61,13 +61,16 @@ export async function GET(request: Request) {
   const cookieStore = await cookies();
   const storedState = cookieStore.get("github_oauth_state")?.value;
 
-  // Delete the state cookie regardless of outcome — it's single-use.
-  cookieStore.delete("github_oauth_state");
-
+  // Validate FIRST, then delete. Deleting before validation would let an
+  // attacker send the victim to the callback endpoint with a mismatched state,
+  // burning the real cookie so a second legitimate attempt also fails.
   if (!storedState || storedState !== state) {
     console.error("[GitHub Callback] State mismatch — possible CSRF.");
     return errorRedirect("invalid_state");
   }
+
+  // Only delete after successful validation — cookie is single-use.
+  cookieStore.delete("github_oauth_state");
 
   // ── Verify the platform user is still authenticated ─────────
   const supabase = await createClient();

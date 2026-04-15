@@ -103,6 +103,13 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Validate price before touching Stripe — Stripe rejects amounts outside
+  // this range anyway, but failing early gives a cleaner error message.
+  // 50 cents minimum (Stripe's USD minimum), $999,999.99 maximum.
+  if (!listing.price_cents || listing.price_cents < 50 || listing.price_cents > 99_999_999) {
+    return NextResponse.json({ error: "Listing has an invalid price." }, { status: 400 });
+  }
+
   // Calculate fees
   const { platformFeeCents, creatorPayoutCents } = calculateFees(listing.price_cents);
 

@@ -109,6 +109,17 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = admin as any;
 
+  // Idempotency check: if this session is already completed, skip the
+  // purchase_count increment. Stripe may retry a webhook multiple times
+  // (network error, our 5xx, etc.). The upsert below is safe to re-run,
+  // but the RPC is not — it would double-count the purchase.
+  const { data: alreadyCompleted } = await db
+    .from("purchases")
+    .select("id")
+    .eq("stripe_session_id", session.id)
+    .eq("status", "completed")
+    .maybeSingle();
+
   // Upsert purchase — creates the row if checkout route's insert failed
   const { error: upsertError } = await db
     .from("purchases")
@@ -128,7 +139,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
         access_granted:       true,
       },
       {
-        onConflict:     "stripe_session_id",
+        onConflict:       "stripe_session_id",
         ignoreDuplicates: false,
       }
     );
@@ -138,14 +149,18 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     throw new Error(`Purchase upsert failed: ${upsertError.message}`);
   }
 
-  // Increment listing purchase_count
-  const { error: rpcError } = await db.rpc("increment_purchase_count", {
-    p_listing_id: listing_id,
-  });
-
-  if (rpcError) {
-    // Non-fatal: denormalized count is not critical
-    console.warn("[stripe-webhook] increment_purchase_count failed:", rpcError.message);
+  // Only increment purchase_count on the FIRST completion of this session.
+  // Re-delivered webhooks must not inflate the count.
+  if (!alreadyCompleted) {
+    const { error: rpcError } = await db.rpc("increment_purchase_count", {
+      p_listing_id: listing_id,
+    });
+    if (rpcError) {
+      // Non-fatal: denormalized count is not critical
+      console.warn("[stripe-webhook] increment_purchase_count failed:", rpcError.message);
+    }
+  } else {
+    console.log(`[stripe-webhook] Duplicate delivery for session ${session.id} — skipping count increment.`);
   }
 
   console.log(
