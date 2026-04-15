@@ -123,10 +123,23 @@ export async function POST(request: Request) {
     .replace(/[-_]/g, " ")
     .replace(/\b\w/g, (c) => c.toUpperCase());
 
+  // Slug: lowercase repo name, hyphens only, unique suffix to avoid collisions.
+  const slugBase = body.repo_name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  const slug = `${slugBase}-${Date.now().toString(36)}`;
+
   const description =
     readme ||
     body.description ||
     `Imported from GitHub: ${body.repo_full_name}`;
+
+  // Tagline must be 10–120 chars (DB constraint).
+  const rawTagline = body.description || `Imported from GitHub: ${body.repo_full_name}`;
+  const tagline = rawTagline.length < 10
+    ? rawTagline.padEnd(10, " ")
+    : rawTagline.slice(0, 120);
 
   // ── Insert draft listing ─────────────────────────────────────
   const { data: listing, error: listingError } = await db
@@ -134,7 +147,8 @@ export async function POST(request: Request) {
     .insert({
       creator_id:  user.id,
       title,
-      tagline:     body.description ?? null,
+      slug,
+      tagline,
       description,
       price_type:  "free",
       price_cents: 0,
