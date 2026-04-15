@@ -9,7 +9,8 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "db:types": "supabase gen types typescript --linked > types/supabase.ts",
-    "db:push": "supabase db push"
+    "db:push": "supabase db push",
+    "audit:test": "npx tsx scripts/test-security-auditor.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.80.0",
