@@ -1,8 +1,8 @@
 # ─── Vibe Code Market — Agentic Crew dependencies ───────────────────────────
 # Python ≥ 3.10 required by crewai.
 
-crewai>=0.80.0,<0.100.0
-crewai-tools>=0.14.0,<0.30.0
+crewai>=1.0.0,<2.0.0
+crewai-tools>=0.14.0
 python-dotenv>=1.0.0
 pyyaml>=6.0.0
 

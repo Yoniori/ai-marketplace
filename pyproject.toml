@@ -26,7 +26,7 @@ readme = "agents/README.md"
 requires-python = ">=3.10,<3.14"
 authors = [{ name = "Vibe Code Market" }]
 dependencies = [
-    "crewai[tools]>=0.80.0,<0.100.0",
+    "crewai[tools]>=1.0.0,<2.0.0",
     "python-dotenv>=1.0.0",
     "pyyaml>=6.0.0",
 ]
