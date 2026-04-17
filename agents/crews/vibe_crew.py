@@ -27,13 +27,16 @@ from tools.guardian_tool import guardian_scan
 CEO_MODEL    = os.getenv("CEO_MODEL",    "anthropic/claude-3-5-sonnet-20241022")
 WORKER_MODEL = os.getenv("WORKER_MODEL", "openai/gpt-4o-mini")
 
+# ─── Config paths (absolute so resolution is stable across CWDs) ─────────────
+_CONFIG_DIR = Path(__file__).resolve().parent.parent / "config"
+
 
 @CrewBase
 class VibeCrew:
     """Vibe Code Market's agentic organization."""
 
-    agents_config = "config/agents.yaml"
-    tasks_config  = "config/tasks.yaml"
+    agents_config = str(_CONFIG_DIR / "agents.yaml")
+    tasks_config  = str(_CONFIG_DIR / "tasks.yaml")
 
     # ─── Manager ────────────────────────────────────────────────────────────
     @agent
