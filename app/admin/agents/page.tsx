@@ -17,6 +17,9 @@ export default function AgentsPage() {
   const [currentState, setCurrentState] = useState<AgentState | null>(null);
   const [result, setResult] = useState<unknown>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [failureReason, setFailureReason] = useState<string | null>(null);
+  const [trace, setTrace] = useState<string | null>(null);
+  const [rawStatus, setRawStatus] = useState<unknown>(null);
   const [attempts, setAttempts] = useState(0);
 
   // Keep a ref so the polling loop can bail immediately on unmount / re-run.
@@ -32,6 +35,9 @@ export default function AgentsPage() {
     setCurrentState(null);
     setResult(null);
     setErrorMsg(null);
+    setFailureReason(null);
+    setTrace(null);
+    setRawStatus(null);
     setAttempts(0);
 
     const data = await runAgents(prompt);
@@ -73,6 +79,12 @@ export default function AgentsPage() {
       }
 
       setCurrentState(status.state ?? null);
+      // Keep the latest raw payload + trace data on every tick so that,
+      // if the crew fails, the console already has the upstream evidence
+      // — not just the final FAILED ping.
+      if (status.rawStatus !== undefined) setRawStatus(status.rawStatus);
+      if (status.failureReason) setFailureReason(status.failureReason);
+      if (status.trace) setTrace(status.trace);
 
       if (status.state === "SUCCESS") {
         setResult(status.result ?? null);
@@ -80,7 +92,11 @@ export default function AgentsPage() {
         return;
       }
       if (status.state === "FAILED") {
-        setErrorMsg("Crew execution reported FAILED state.");
+        setErrorMsg(
+          status.failureReason ??
+            status.error ??
+            "Crew execution reported FAILED state.",
+        );
         setPhase("failed");
         return;
       }
@@ -242,27 +258,64 @@ export default function AgentsPage() {
           </div>
         )}
 
-        {/* Failure — error surface */}
+        {/* Failure — error surface (summary + reason + trace + raw payload) */}
         {phase === "failed" && errorMsg && (
           <div
-            className="mt-6 rounded-xl p-5"
+            className="mt-6 rounded-xl p-5 space-y-4"
             style={{
               background: "rgba(25,25,28,0.80)",
               border: "1px solid rgba(239,68,68,0.40)",
               backdropFilter: "blur(12px)",
             }}
           >
-            <div className="mb-3 flex items-center gap-2">
+            <div className="flex items-center gap-2">
               <XCircle className="h-3.5 w-3.5 text-red-400" />
               <span className="font-mono text-[11px] uppercase tracking-widest text-red-400/80">
                 Error
               </span>
             </div>
-            <pre
-              className="overflow-x-auto whitespace-pre-wrap font-mono text-xs leading-relaxed text-red-300/90"
-            >
-              {errorMsg}
-            </pre>
+
+            <div>
+              <div className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant/40 mb-1">
+                Summary
+              </div>
+              <pre className="overflow-x-auto whitespace-pre-wrap font-mono text-xs leading-relaxed text-red-300/90">
+                {errorMsg}
+              </pre>
+            </div>
+
+            {failureReason && failureReason !== errorMsg && (
+              <div>
+                <div className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant/40 mb-1">
+                  Failure reason
+                </div>
+                <pre className="overflow-x-auto whitespace-pre-wrap font-mono text-xs leading-relaxed text-red-300/90">
+                  {failureReason}
+                </pre>
+              </div>
+            )}
+
+            {trace && (
+              <div>
+                <div className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant/40 mb-1">
+                  Trace
+                </div>
+                <pre className="overflow-x-auto whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-red-300/80">
+                  {trace}
+                </pre>
+              </div>
+            )}
+
+            {rawStatus != null && (
+              <details className="group">
+                <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-widest text-on-surface-variant/50 hover:text-on-surface-variant/80">
+                  Raw upstream payload
+                </summary>
+                <pre className="mt-2 overflow-x-auto whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-on-surface-variant/70">
+                  {JSON.stringify(rawStatus, null, 2)}
+                </pre>
+              </details>
+            )}
           </div>
         )}
 

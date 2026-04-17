@@ -17,12 +17,25 @@ export interface KickoffResult {
   error?: string;
 }
 
-/** Result of GET /status/:id — snapshot of the crew's current execution. */
+/** Result of GET /status/:id — snapshot of the crew's current execution.
+ *
+ * CrewAI Cloud surfaces trace/failure information under several different
+ * field names depending on version — we capture the superset and let the
+ * UI pick whichever is populated. `rawStatus` is the full, un-normalised
+ * payload so the admin console can show the exact upstream response when
+ * a crew fails and the structured fields aren't enough to diagnose.
+ */
 export interface AgentStatus {
   state?: AgentState;
   result?: unknown;
   lastStep?: unknown;
   error?: string;
+  /** Human-readable reason the crew died, if the upstream surfaced one. */
+  failureReason?: string;
+  /** Stack trace or multi-line error blob from the crew runtime. */
+  trace?: string;
+  /** Untouched status payload — surfaced verbatim for debugging. */
+  rawStatus?: unknown;
 }
 
 // Back-compat alias — the initial callers typed the kickoff return as
@@ -122,6 +135,8 @@ export async function getAgentStatus(kickoffId: string): Promise<AgentStatus> {
 
     // Some deployments expose the field as `state`, others as `status`.
     // Normalise to `state` on our side so the caller has a single field.
+    // Trace/failure information also drifts across CrewAI Cloud versions —
+    // we read the superset and let the UI render whatever is populated.
     const data = (await res.json().catch(() => ({}))) as {
       state?: string;
       status?: string;
@@ -129,13 +144,35 @@ export async function getAgentStatus(kickoffId: string): Promise<AgentStatus> {
       last_step?: unknown;
       lastStep?: unknown;
       error?: string;
+      error_message?: string;
+      errorMessage?: string;
+      failure_reason?: string;
+      failureReason?: string;
+      detail?: string;
+      message?: string;
+      trace?: string;
+      traceback?: string;
+      stack?: string;
     };
+
+    const failureReason =
+      data.failure_reason ??
+      data.failureReason ??
+      data.error_message ??
+      data.errorMessage ??
+      data.detail ??
+      data.message;
+
+    const trace = data.trace ?? data.traceback ?? data.stack;
 
     return {
       state: (data.state ?? data.status) as AgentState | undefined,
       result: data.result,
       lastStep: data.last_step ?? data.lastStep,
       error: data.error,
+      failureReason,
+      trace,
+      rawStatus: data,
     };
   } catch (err) {
     return { error: err instanceof Error ? err.message : "Unknown error" };
