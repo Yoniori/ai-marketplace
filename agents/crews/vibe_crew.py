@@ -28,7 +28,17 @@ CEO_MODEL    = os.getenv("CEO_MODEL",    "anthropic/claude-3-5-sonnet-20241022")
 WORKER_MODEL = os.getenv("WORKER_MODEL", "openai/gpt-4o-mini")
 
 # ─── Config paths (absolute so resolution is stable across CWDs) ─────────────
-_CONFIG_DIR = Path(__file__).resolve().parent.parent / "config"
+#
+# CrewAI Cloud expects YAMLs at the canonical src/vibe_crew/config/ location.
+# We prefer that path when present (the deploy bundle always ships it) and
+# fall back to the authored location in agents/config/ for purely-local
+# development where the canonical copy may not yet be populated.
+_HERE      = Path(__file__).resolve()
+_REPO_ROOT = _HERE.parents[2]                                # repo root
+_CANONICAL = _REPO_ROOT / "src" / "vibe_crew" / "config"     # CrewAI Cloud layout
+_LEGACY    = _HERE.parent.parent / "config"                  # agents/config/
+
+_CONFIG_DIR = _CANONICAL if (_CANONICAL / "agents.yaml").exists() else _LEGACY
 
 
 @CrewBase

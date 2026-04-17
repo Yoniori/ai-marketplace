@@ -47,6 +47,7 @@ packages = ["src/vibe_crew"]
 [tool.hatch.build]
 include = [
     "src/vibe_crew/**/*.py",
+    "src/vibe_crew/config/*.yaml",
     "agents/**/*.py",
     "agents/config/*.yaml",
     "agents/README.md",

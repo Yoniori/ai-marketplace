@@ -1,0 +1,191 @@
+# ─── Vibe Code Market — Task Pipeline ───────────────────────────────────────
+#
+# The crew runs hierarchically under the CEO. Tasks chain via `context:` so
+# the dependency order is enforced by the framework, not by hope:
+#
+#   brand_direction ─► ui_specification ─► system_architecture
+#                                           └► implementation (Guardian gate)
+#                                                └► growth_plan ─► launch_copy
+#
+# The CEO (manager_agent) reviews every handoff and can re-delegate.
+# The `{brief}` placeholder is populated from crew.kickoff(inputs={"brief": ...}).
+# ────────────────────────────────────────────────────────────────────────────
+
+brand_direction:
+  description: >
+    The founder has submitted the following brief:
+
+    ----- BRIEF -----
+    {brief}
+    ----- END BRIEF -----
+
+    Define the brand and visual direction for this initiative in under 300
+    words. Your memo must contain exactly four sections:
+
+      1. Core feeling — two sentences on what the user should feel in the
+         first five seconds.
+      2. Visual vocabulary — palette, typography, motion language, imagery.
+      3. Three "we do / we don't" pairs that define the taste guardrails.
+      4. One reference product or cultural moment to anchor the vision.
+
+    Do not write copy. Do not design screens. Do not hedge. Define the
+    direction with one point of view.
+  expected_output: >
+    A markdown brand-direction memo (≤300 words) with the four labeled
+    sections above. Opinionated. No buzzwords. No "best practices" filler.
+  agent: creative_director
+
+ui_specification:
+  description: >
+    Using the brand direction above as your north star, produce the UI
+    specification for the initiative described in the brief.
+
+    Your spec must contain:
+
+      1. Component hierarchy — a tree of the components to build.
+      2. Interaction & state model — hover, focus, loading, empty, error,
+         plus keyboard interactions.
+      3. Layout & spacing rules aligned to the stack (Tailwind + Radix UI).
+      4. Accessibility contract — tab order, ARIA roles, reduced-motion
+         behavior.
+      5. Open questions — anything the CEO must decide before engineering
+         begins.
+
+    Hard constraints:
+      - The spec ships into a Next.js 14 App Router codebase using Tailwind
+        and Radix UI. Do not propose patterns that fight the stack.
+      - Design every state, not just the happy path.
+  expected_output: >
+    A markdown UI specification detailed enough that an engineer could build
+    it without asking a follow-up question. Every interaction state must be
+    described. Do not include lorem-ipsum copy.
+  agent: interface_specialist
+  context:
+    - brand_direction
+
+system_architecture:
+  description: >
+    The CEO has reviewed and approved the UI specification. Design the
+    technical approach to implement it.
+
+    Your memo must cover:
+
+      1. Files to create, modify, or delete — with paths relative to the
+         repository root.
+      2. Data flow — where state lives, how it mutates, what crosses the
+         network boundary.
+      3. Database / Supabase changes (if any) — tables, columns, RLS
+         policies, migration files.
+      4. Server Actions and API routes involved.
+      5. Risks and tradeoffs — what could go wrong, what is being deferred.
+
+    Hard constraint — the following files are frozen and must NOT appear
+    in your change list:
+      - app/api/github/callback/route.ts
+      - app/api/discover/route.ts
+      - app/api/webhooks/stripe/route.ts
+      - app/api/listings/[id]/check/route.ts
+      - app/api/profiles/me/route.ts
+      - app/api/payments/checkout/route.ts
+      - lib/listing-check/worker.ts
+
+    If any of the above would need to change to deliver the feature, stop
+    and escalate to the CEO instead of proposing the change.
+  expected_output: >
+    A markdown architecture memo with concrete file paths, an ASCII data-flow
+    diagram, and an explicit risk section. No hand-waving.
+  agent: system_architect
+  context:
+    - ui_specification
+
+implementation:
+  description: >
+    Implement the architecture above as production-grade TypeScript.
+
+    MANDATORY WORKFLOW — this is not negotiable:
+
+      1. For each file in the change list, write the complete file contents.
+         No ellipses, no "... rest of file unchanged", no placeholders.
+      2. For every file you produce, call the `guardian_scan` tool with:
+           - `code`: the full file contents as a string
+           - `filename`: a synthetic name with the correct extension
+             (e.g. "proposed-Navbar.tsx", "proposed-route.ts")
+      3. If `guardian_scan` returns ANY finding with severity CRITICAL or
+         HIGH, rewrite the file to remediate and scan again. Repeat until
+         the file returns zero CRITICAL and zero HIGH findings.
+      4. MEDIUM and LOW findings should be addressed when reasonable, but
+         may be left if you document the tradeoff.
+      5. Only after every file has passed the Guardian gate may you return
+         a final answer.
+
+    The Guardian gate is how this company earns the right to ship. Do not
+    shortcut it. Do not describe what you would write without writing and
+    scanning it.
+  expected_output: >
+    For each file, in order:
+      (a) A markdown heading with the file path.
+      (b) A fenced code block containing the complete file contents.
+      (c) A compact Guardian scan summary for that file (overallRisk,
+          totalFindings, byCategory).
+      (d) One line noting any rewrite iteration that was needed.
+
+    End the response with a single final line:
+      "Guardian Gate: PASS — N files scanned, 0 CRITICAL, 0 HIGH"
+  agent: fullstack_coder
+  context:
+    - system_architecture
+
+growth_plan:
+  description: >
+    The implementation has cleared the Guardian gate. Build the growth plan
+    for this feature's launch.
+
+    Your plan must contain:
+
+      1. The one-sentence pitch — ≤15 words, written for a creator who has
+         never heard of this feature.
+      2. Activation hypothesis — what specific user behavior do we expect
+         to change, and by how much.
+      3. Distribution channels ranked by fit, split into three time
+         horizons: launch day, week one, month one. One-line justification
+         per channel.
+      4. Three metrics we will instrument and watch. Every metric must be
+         countable. "Engagement" and "retention" are not countable — break
+         them into observable events.
+      5. Kill criterion — what measured outcome would cause us to roll
+         this feature back.
+  expected_output: >
+    A markdown growth memo with the five labeled sections. Numbers where
+    numbers belong. Opinionated channel ranking. No "omnichannel" language.
+  agent: growth_strategist
+  context:
+    - implementation
+
+launch_copy:
+  description: >
+    Using the growth plan's one-sentence pitch as your anchor, write the
+    launch copy package.
+
+    Deliverables:
+
+      1. Landing hero — headline (≤9 words), subhead (≤20 words), CTA
+         (≤3 words).
+      2. Twitter / X launch post — ≤240 characters, one sentence, written
+         so the product earns the post rather than announces itself.
+      3. Email announcement to existing creators — ≤120 words, ends with
+         one clear action.
+      4. One empty-state microcopy — two lines max, voice-matched.
+
+    Voice rules:
+      - Confident, specific, slightly ahead of itself.
+      - Banned words and patterns: "unlock", "revolutionary", "seamless",
+        "the future is here", "take your X to the next level".
+      - No exclamation marks. No em-dash theatrics. No three-word drama
+        sentences.
+  expected_output: >
+    A markdown copy deck with all four pieces, clearly labeled, ready to
+    hand to a designer for placement. Each piece must respect its character
+    or word limit.
+  agent: copywriter
+  context:
+    - growth_plan
