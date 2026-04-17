@@ -155,9 +155,16 @@ export function FindMyVibeDrawer() {
                       .replace(/&/g, "&amp;")
                       .replace(/</g, "&lt;")
                       .replace(/>/g, "&gt;")
+                      .replace(/"/g, "&quot;")
                       .replace(
                         /\*\*\[(.+?)\]\((.+?)\)\*\*/g,
-                        '<a href="$2" style="color:#00e6e6;text-decoration:underline;text-underline-offset:2px" target="_blank">$1</a>',
+                        (_, text, url) => {
+                          const safe =
+                            /^(\/|https?:\/\/|mailto:)/i.test(url) &&
+                            !/["<>\s]/.test(url);
+                          if (!safe) return text;
+                          return `<a href="${url}" style="color:#00e6e6;text-decoration:underline;text-underline-offset:2px" target="_blank" rel="noopener noreferrer">${text}</a>`;
+                        },
                       )
                       .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
                       .replace(/\n/g, "<br />"),

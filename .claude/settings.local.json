@@ -58,7 +58,9 @@
       "WebFetch(domain:futuretools.io)",
       "WebFetch(domain:topai.tools)",
       "WebFetch(domain:www.lemonsqueezy.com)",
-      "WebFetch(domain:aiblewmymind.substack.com)"
+      "WebFetch(domain:aiblewmymind.substack.com)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)"
     ]
   }
 }

@@ -30,3 +30,16 @@ export { generateMarkdownReport } from "./report";
 
 // Re-export severity helpers for UI consumers
 export { severityLabel, severityWeight, categoryToCwe } from "./utils";
+
+// ── SecurityGuardian facade ──────────────────────────────────────────────────
+export { SecurityGuardian, guardian } from "./guardian";
+
+// ── Check registry (for live counts + admin dashboard) ───────────────────────
+export {
+  CHECK_REGISTRY,
+  getCheckCount,
+  getCoveredCategories,
+  getChecksByCategory,
+  getChecksByRuleFile,
+  type CheckDescriptor,
+} from "./registry";
