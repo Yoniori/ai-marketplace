@@ -17,7 +17,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from crewai import Agent, Crew, Process, Task
+from crewai import LLM, Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 
 from tools.guardian_tool import guardian_scan
@@ -26,6 +26,43 @@ from tools.guardian_tool import guardian_scan
 # ─── Model routing (env overrides permitted) ─────────────────────────────────
 CEO_MODEL    = os.getenv("CEO_MODEL",    "anthropic/claude-3-5-sonnet-20241022")
 WORKER_MODEL = os.getenv("WORKER_MODEL", "openai/gpt-4o-mini")
+
+
+# ─── API key resolution (eager, explicit) ────────────────────────────────────
+#
+# CrewAI's bare-string `llm=...` shorthand defers LLM construction until the
+# first task runs, which is where we were catching the "ANTHROPIC_API_KEY is
+# required" error on CrewAI Cloud — the env var hadn't propagated into the
+# worker subprocess by that late binding point.
+#
+# We resolve the keys AT IMPORT TIME and pass them explicitly into `LLM(...)`
+# so the binding is deterministic. Missing-key failures surface immediately in
+# the deploy log rather than three stack frames into the first task.
+_ANTHROPIC_KEY = (os.getenv("ANTHROPIC_API_KEY") or "").strip() or None
+_OPENAI_KEY    = (os.getenv("OPENAI_API_KEY")    or "").strip() or None
+
+# Some downstream SDKs still read from os.environ. Normalise both locations so
+# either access path finds the same (stripped) value.
+if _ANTHROPIC_KEY: os.environ["ANTHROPIC_API_KEY"] = _ANTHROPIC_KEY
+if _OPENAI_KEY:    os.environ["OPENAI_API_KEY"]    = _OPENAI_KEY
+
+# Visible at the top of every crew run — if a key is missing you see it before
+# the first task is ever dispatched, instead of decoding it from a trace.
+print(f"[vibe_crew] ANTHROPIC_API_KEY present: {bool(_ANTHROPIC_KEY)}")
+print(f"[vibe_crew] OPENAI_API_KEY    present: {bool(_OPENAI_KEY)}")
+if not _ANTHROPIC_KEY or not _OPENAI_KEY:
+    print(
+        "[vibe_crew] WARNING: one or more required API keys are missing — the "
+        "crew will fail on the first task. Set ANTHROPIC_API_KEY and "
+        "OPENAI_API_KEY under CrewAI Cloud → Environment Variables, then "
+        "redeploy.",
+    )
+
+# Explicit LLM objects — one per provider. CrewAI's Agent constructor accepts
+# an LLM instance via the `llm=` kwarg, and that kwarg overrides whatever
+# `llm:` string lives in the YAML config dict we also pass in.
+CEO_LLM = LLM(model=CEO_MODEL, api_key=_ANTHROPIC_KEY)
+WORKER_LLM = LLM(model=WORKER_MODEL, api_key=_OPENAI_KEY)
 
 # ─── Config paths (absolute so resolution is stable across CWDs) ─────────────
 #
@@ -53,7 +90,7 @@ class VibeCrew:
     def ceo(self) -> Agent:
         return Agent(
             config=self.agents_config["ceo"],
-            llm=CEO_MODEL,
+            llm=CEO_LLM,
             allow_delegation=True,
             verbose=True,
         )
@@ -63,7 +100,7 @@ class VibeCrew:
     def creative_director(self) -> Agent:
         return Agent(
             config=self.agents_config["creative_director"],
-            llm=WORKER_MODEL,
+            llm=WORKER_LLM,
             allow_delegation=False,
             verbose=True,
         )
@@ -72,7 +109,7 @@ class VibeCrew:
     def interface_specialist(self) -> Agent:
         return Agent(
             config=self.agents_config["interface_specialist"],
-            llm=WORKER_MODEL,
+            llm=WORKER_LLM,
             allow_delegation=False,
             verbose=True,
         )
@@ -82,7 +119,7 @@ class VibeCrew:
     def system_architect(self) -> Agent:
         return Agent(
             config=self.agents_config["system_architect"],
-            llm=WORKER_MODEL,
+            llm=WORKER_LLM,
             allow_delegation=False,
             verbose=True,
         )
@@ -93,7 +130,7 @@ class VibeCrew:
         # must pass through guardian_scan before the task is marked complete.
         return Agent(
             config=self.agents_config["fullstack_coder"],
-            llm=WORKER_MODEL,
+            llm=WORKER_LLM,
             tools=[guardian_scan],
             allow_delegation=False,
             verbose=True,
@@ -104,7 +141,7 @@ class VibeCrew:
     def growth_strategist(self) -> Agent:
         return Agent(
             config=self.agents_config["growth_strategist"],
-            llm=WORKER_MODEL,
+            llm=WORKER_LLM,
             allow_delegation=False,
             verbose=True,
         )
@@ -113,7 +150,7 @@ class VibeCrew:
     def copywriter(self) -> Agent:
         return Agent(
             config=self.agents_config["copywriter"],
-            llm=WORKER_MODEL,
+            llm=WORKER_LLM,
             allow_delegation=False,
             verbose=True,
         )

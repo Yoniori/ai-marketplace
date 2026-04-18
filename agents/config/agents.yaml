@@ -176,4 +176,3 @@ copywriter:
   llm: openai/gpt-4o-mini
   allow_delegation: false
   verbose: true
- 

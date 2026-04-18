@@ -24,7 +24,18 @@ brand_direction:
 
       1. Core feeling — two sentences on what the user should feel in the
          first five seconds.
-      2. Visual vocabulary — palette, typography, motion language, imagery.
+      2. Visual vocabulary — concrete tokens, not adjectives:
+           - Palette: minimum 3 hex codes (e.g. `#0E0E10`, `#00E6E6`,
+             `#9C42F4`) with a one-line role for each (surface, primary,
+             accent, …).
+           - Typography: specific font families by name (e.g. "Space Grotesk
+             for headlines, Inter for body, JetBrains Mono for numeric /
+             code") plus the heading/body scale ratio.
+           - Motion language: one sentence on easing and duration defaults
+             (e.g. "160ms ease-out on hover, 240ms cubic-bezier for
+             enter/exit").
+           - Imagery: the visual register in one sentence (photographic,
+             diagrammatic, illustrative, abstract).
       3. Three "we do / we don't" pairs that define the taste guardrails.
       4. One reference product or cultural moment to anchor the vision.
 
@@ -32,7 +43,9 @@ brand_direction:
     direction with one point of view.
   expected_output: >
     A markdown brand-direction memo (≤300 words) with the four labeled
-    sections above. Opinionated. No buzzwords. No "best practices" filler.
+    sections above. Palette MUST include explicit hex codes. Typography
+    MUST name real font families. Opinionated. No buzzwords. No "best
+    practices" filler.
   agent: creative_director
 
 ui_specification:
@@ -42,23 +55,40 @@ ui_specification:
 
     Your spec must contain:
 
-      1. Component hierarchy — a tree of the components to build.
-      2. Interaction & state model — hover, focus, loading, empty, error,
-         plus keyboard interactions.
-      3. Layout & spacing rules aligned to the stack (Tailwind + Radix UI).
+      1. Component hierarchy — an ASCII tree of the components to build,
+         with the Radix primitive each one wraps (if any) in parens.
+      2. Interaction & state model — for every interactive component,
+         enumerate its states as a table: `state | trigger | visual change
+         | Tailwind class delta`. States MUST cover: default, hover, focus,
+         focus-visible, active, disabled, loading, empty, error.
+      3. Layout & spacing — for each component, provide the literal
+         Tailwind class string an engineer would copy into the JSX,
+         including responsive prefixes where relevant. Example format:
+           `className="flex items-center gap-3 rounded-xl bg-[#0A0A0A]
+            px-4 py-2 text-sm font-mono text-white/90 hover:ring-1
+            hover:ring-indigo-500/40 transition"`
+         Do NOT write prose like "use some padding" — write the classes.
+         Reuse design tokens from the brand direction's palette/typography
+         (no new hex codes unless justified).
       4. Accessibility contract — tab order, ARIA roles, reduced-motion
-         behavior.
+         behavior, keyboard shortcuts with key names.
       5. Open questions — anything the CEO must decide before engineering
-         begins.
+         begins. Number them.
 
     Hard constraints:
       - The spec ships into a Next.js 14 App Router codebase using Tailwind
         and Radix UI. Do not propose patterns that fight the stack.
       - Design every state, not just the happy path.
+      - No inline `style={{ … }}` attributes unless a value genuinely cannot
+        be expressed as Tailwind.
+      - No arbitrary Tailwind values (`[calc(...)]`, `[17px]`) without a
+        one-line reason in a trailing comment.
   expected_output: >
-    A markdown UI specification detailed enough that an engineer could build
-    it without asking a follow-up question. Every interaction state must be
-    described. Do not include lorem-ipsum copy.
+    A markdown UI specification detailed enough that an engineer could paste
+    the Tailwind class strings directly into JSX. Every interaction state
+    must be in the states table. Every component must have a literal
+    `className` example. No lorem-ipsum copy. No hand-wavy "use spacing"
+    language.
   agent: interface_specialist
   context:
     - brand_direction
