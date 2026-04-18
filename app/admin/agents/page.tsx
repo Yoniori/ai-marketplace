@@ -48,6 +48,11 @@ export default function AgentsPage() {
   }, []);
 
   // ── Run handler ──────────────────────────────────────────────────────────
+  //
+  // Every failure path here must end in `setPhase("failed")` + `setErrorMsg`
+  // — never a throw. The route-level error.tsx is a safety net, not the
+  // primary handling path. If the user sees the error boundary it means
+  // *this* function leaked an exception, which is a bug.
   async function handleRun() {
     const topic = prompt.trim();
     if (!topic) return;
@@ -64,6 +69,27 @@ export default function AgentsPage() {
     setCurrentStage(null);
     setErrorMsg(null);
 
+    // Helper: route any caught exception into the red error panel without
+    // letting it escape `handleRun`.
+    const fail = (err: unknown) => {
+      if (err instanceof Error && err.name === "AbortError") return;
+      const message =
+        err instanceof Error ? err.message : typeof err === "string" ? err : "Unknown error";
+      console.error("[admin/agents] run failed:", err);
+      setErrorMsg(message);
+      setPhase("failed");
+    };
+
+    // Wrap `applyEvent` at the call site so a bug in the reducer can never
+    // bubble up into React's render tree.
+    const safeApply = (evt: PipelineEvent) => {
+      try {
+        applyEvent(evt);
+      } catch (err) {
+        console.error("[admin/agents] applyEvent threw for", evt, err);
+      }
+    };
+
     try {
       const res = await fetch("/api/design-agents", {
         method: "POST",
@@ -73,10 +99,16 @@ export default function AgentsPage() {
       });
 
       if (!res.ok || !res.body) {
-        const payload = await res
-          .json()
-          .catch(() => ({ error: `HTTP ${res.status}` }));
-        setErrorMsg(payload.error ?? `HTTP ${res.status}`);
+        let payloadError = `HTTP ${res.status}`;
+        try {
+          const payload = (await res.json()) as { error?: unknown };
+          if (typeof payload.error === "string" && payload.error) {
+            payloadError = payload.error;
+          }
+        } catch {
+          // Not JSON — keep the HTTP-status fallback.
+        }
+        setErrorMsg(payloadError);
         setPhase("failed");
         return;
       }
@@ -85,22 +117,40 @@ export default function AgentsPage() {
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let buffer = "";
+      let sawTerminalEvent = false;
 
       while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
+        let chunk: ReadableStreamReadResult<Uint8Array>;
+        try {
+          chunk = await reader.read();
+        } catch (err) {
+          // The underlying stream errored mid-flight (dropped connection,
+          // server crash, etc). Surface it — don't let the exception
+          // escape to the React root.
+          fail(err);
+          return;
+        }
+        if (chunk.done) break;
 
-        buffer += decoder.decode(value, { stream: true });
+        buffer += decoder.decode(chunk.value, { stream: true });
         const lines = buffer.split("\n");
         buffer = lines.pop() ?? ""; // keep the (possibly partial) last line
 
         for (const line of lines) {
           const trimmed = line.trim();
           if (!trimmed) continue;
+          let parsed: PipelineEvent | null = null;
           try {
-            applyEvent(JSON.parse(trimmed) as PipelineEvent);
+            parsed = JSON.parse(trimmed) as PipelineEvent;
           } catch {
-            // Ignore a malformed line — the next one will probably be fine.
+            // Malformed line — skip it and keep going.
+            continue;
+          }
+          if (parsed && typeof parsed === "object" && "type" in parsed) {
+            if (parsed.type === "error" || parsed.type === "pipeline_complete") {
+              sawTerminalEvent = true;
+            }
+            safeApply(parsed);
           }
         }
       }
@@ -109,15 +159,29 @@ export default function AgentsPage() {
       const tail = buffer.trim();
       if (tail) {
         try {
-          applyEvent(JSON.parse(tail) as PipelineEvent);
+          const parsed = JSON.parse(tail) as PipelineEvent;
+          if (parsed && typeof parsed === "object" && "type" in parsed) {
+            if (parsed.type === "error" || parsed.type === "pipeline_complete") {
+              sawTerminalEvent = true;
+            }
+            safeApply(parsed);
+          }
         } catch {
           /* ignore */
         }
       }
+
+      // If the stream closed without a terminal event AND we never flipped
+      // to success/failed via an event, surface it as an error rather than
+      // leaving the UI stuck in "running".
+      if (!sawTerminalEvent) {
+        setErrorMsg(
+          "Stream closed before the pipeline reported completion. Check the dev-server terminal for an [design-agents] log line.",
+        );
+        setPhase("failed");
+      }
     } catch (err) {
-      if ((err as Error).name === "AbortError") return;
-      setErrorMsg(err instanceof Error ? err.message : "Unknown error");
-      setPhase("failed");
+      fail(err);
     }
   }
 
