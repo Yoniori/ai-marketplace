@@ -60,7 +60,20 @@
       "WebFetch(domain:www.lemonsqueezy.com)",
       "WebFetch(domain:aiblewmymind.substack.com)",
       "Bash(git pull:*)",
-      "Bash(git stash:*)"
+      "Bash(git stash:*)",
+      "Bash(command -v uv)",
+      "Bash(uv --version)",
+      "Bash(command -v poetry)",
+      "Bash(poetry --version)",
+      "Bash(command -v python3)",
+      "Bash(/tmp/_uv_bootstrap_98431/bin/pip install:*)",
+      "Bash(export UV_INSTALL_DIR=/tmp/uv-bin)",
+      "Bash(mkdir -p /tmp/uv-bin)",
+      "Bash(curl -LsSf https://astral.sh/uv/install.sh)",
+      "Bash(export UV_CACHE_DIR=/tmp/uv-cache)",
+      "Bash(export UV_PYTHON_INSTALL_DIR=/tmp/uv-pythons)",
+      "Bash(/tmp/uv-bin/uv python:*)",
+      "Bash(/tmp/uv-bin/uv lock:*)"
     ]
   }
 }
