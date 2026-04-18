@@ -1,129 +1,189 @@
 "use client";
 
+import {
+  CheckCircle2,
+  Loader2,
+  Sparkles,
+  Terminal,
+  XCircle,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { runAgents, getAgentStatus, type AgentState } from "@/app/actions/ai-agents";
-import { Loader2, Sparkles, Terminal, CheckCircle2, XCircle } from "lucide-react";
 
-// ─── Polling tuning ──────────────────────────────────────────────────────────
-const POLL_INTERVAL_MS = 2_000;
-const POLL_MAX_ATTEMPTS = 300; // 2s × 300 = 10 minutes
+import type {
+  PipelineEvent,
+  StageKey,
+} from "@/lib/design-agents/pipeline";
 
-type Phase = "idle" | "kickoff" | "polling" | "success" | "failed";
+// ─── Types ──────────────────────────────────────────────────────────────────
+
+type Phase = "idle" | "running" | "success" | "failed";
+
+interface StageMeta {
+  key: StageKey;
+  title: string;
+}
+
+interface StageState {
+  status: "pending" | "streaming" | "complete" | "errored";
+  text: string;
+}
+
+// ─── Component ──────────────────────────────────────────────────────────────
 
 export default function AgentsPage() {
   const [prompt, setPrompt] = useState("");
   const [phase, setPhase] = useState<Phase>("idle");
-  const [kickoffId, setKickoffId] = useState<string | null>(null);
-  const [currentState, setCurrentState] = useState<AgentState | null>(null);
-  const [result, setResult] = useState<unknown>(null);
+  const [stages, setStages] = useState<StageMeta[]>([]);
+  const [states, setStates] = useState<Record<string, StageState>>({});
+  const [currentStage, setCurrentStage] = useState<StageKey | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [failureReason, setFailureReason] = useState<string | null>(null);
-  const [trace, setTrace] = useState<string | null>(null);
-  const [rawStatus, setRawStatus] = useState<unknown>(null);
-  const [attempts, setAttempts] = useState(0);
 
-  // Keep a ref so the polling loop can bail immediately on unmount / re-run.
-  const activeRef = useRef(false);
+  // AbortController for cancelling an in-flight run (on unmount or re-run).
+  const abortRef = useRef<AbortController | null>(null);
 
-  // ── Kickoff handler ──────────────────────────────────────────────────────
-  async function handleRun() {
-    if (!prompt.trim()) return;
-    if (phase === "kickoff" || phase === "polling") return;
-
-    setPhase("kickoff");
-    setKickoffId(null);
-    setCurrentState(null);
-    setResult(null);
-    setErrorMsg(null);
-    setFailureReason(null);
-    setTrace(null);
-    setRawStatus(null);
-    setAttempts(0);
-
-    const data = await runAgents(prompt);
-    if (data.error) {
-      setErrorMsg(data.error);
-      setPhase("failed");
-      return;
-    }
-    if (!data.executionId) {
-      setErrorMsg("Kickoff succeeded but no executionId returned.");
-      setPhase("failed");
-      return;
-    }
-
-    setKickoffId(data.executionId);
-    setPhase("polling");
-  }
-
-  // ── Polling loop (serial, not setInterval — prevents overlapping requests) ─
   useEffect(() => {
-    if (phase !== "polling" || !kickoffId) return;
+    return () => {
+      abortRef.current?.abort();
+    };
+  }, []);
 
-    activeRef.current = true;
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
-    let localAttempts = 0;
+  // ── Run handler ──────────────────────────────────────────────────────────
+  async function handleRun() {
+    const topic = prompt.trim();
+    if (!topic) return;
+    if (phase === "running") return;
 
-    const tick = async () => {
-      if (!activeRef.current) return;
-      localAttempts += 1;
-      setAttempts(localAttempts);
+    // Cancel any existing run before starting a new one.
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
 
-      const status = await getAgentStatus(kickoffId);
-      if (!activeRef.current) return;
+    setPhase("running");
+    setStages([]);
+    setStates({});
+    setCurrentStage(null);
+    setErrorMsg(null);
 
-      if (status.error) {
-        setErrorMsg(status.error);
+    try {
+      const res = await fetch("/api/design-agents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic }),
+        signal: controller.signal,
+      });
+
+      if (!res.ok || !res.body) {
+        const payload = await res
+          .json()
+          .catch(() => ({ error: `HTTP ${res.status}` }));
+        setErrorMsg(payload.error ?? `HTTP ${res.status}`);
         setPhase("failed");
         return;
       }
 
-      setCurrentState(status.state ?? null);
-      // Keep the latest raw payload + trace data on every tick so that,
-      // if the crew fails, the console already has the upstream evidence
-      // — not just the final FAILED ping.
-      if (status.rawStatus !== undefined) setRawStatus(status.rawStatus);
-      if (status.failureReason) setFailureReason(status.failureReason);
-      if (status.trace) setTrace(status.trace);
+      // ── Decode the NDJSON stream ─────────────────────────────────────────
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
 
-      if (status.state === "SUCCESS") {
-        setResult(status.result ?? null);
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? ""; // keep the (possibly partial) last line
+
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed) continue;
+          try {
+            applyEvent(JSON.parse(trimmed) as PipelineEvent);
+          } catch {
+            // Ignore a malformed line — the next one will probably be fine.
+          }
+        }
+      }
+
+      // Flush any trailing line in the buffer.
+      const tail = buffer.trim();
+      if (tail) {
+        try {
+          applyEvent(JSON.parse(tail) as PipelineEvent);
+        } catch {
+          /* ignore */
+        }
+      }
+    } catch (err) {
+      if ((err as Error).name === "AbortError") return;
+      setErrorMsg(err instanceof Error ? err.message : "Unknown error");
+      setPhase("failed");
+    }
+  }
+
+  // ── Event reducer ────────────────────────────────────────────────────────
+  function applyEvent(evt: PipelineEvent) {
+    switch (evt.type) {
+      case "pipeline_start": {
+        setStages(evt.stages);
+        const initial: Record<string, StageState> = {};
+        for (const s of evt.stages) {
+          initial[s.key] = { status: "pending", text: "" };
+        }
+        setStates(initial);
+        return;
+      }
+      case "stage_start": {
+        setCurrentStage(evt.key);
+        setStates((prev) => ({
+          ...prev,
+          [evt.key]: { status: "streaming", text: "" },
+        }));
+        return;
+      }
+      case "stage_delta": {
+        setStates((prev) => {
+          const existing = prev[evt.key] ?? { status: "streaming", text: "" };
+          return {
+            ...prev,
+            [evt.key]: {
+              status: "streaming",
+              text: existing.text + evt.delta,
+            },
+          };
+        });
+        return;
+      }
+      case "stage_complete": {
+        setStates((prev) => ({
+          ...prev,
+          [evt.key]: { status: "complete", text: evt.text },
+        }));
+        return;
+      }
+      case "pipeline_complete": {
+        setCurrentStage(null);
         setPhase("success");
         return;
       }
-      if (status.state === "FAILED") {
-        setErrorMsg(
-          status.failureReason ??
-            status.error ??
-            "Crew execution reported FAILED state.",
-        );
+      case "error": {
+        setErrorMsg(evt.message);
+        if (evt.key) {
+          setStates((prev) => ({
+            ...prev,
+            [evt.key!]: {
+              status: "errored",
+              text: prev[evt.key!]?.text ?? "",
+            },
+          }));
+        }
         setPhase("failed");
         return;
       }
+    }
+  }
 
-      if (localAttempts >= POLL_MAX_ATTEMPTS) {
-        setErrorMsg(`Polling timed out after ${POLL_MAX_ATTEMPTS * POLL_INTERVAL_MS / 60_000} minutes.`);
-        setPhase("failed");
-        return;
-      }
-
-      if (activeRef.current) {
-        timeoutId = setTimeout(tick, POLL_INTERVAL_MS);
-      }
-    };
-
-    tick();
-
-    return () => {
-      activeRef.current = false;
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [phase, kickoffId]);
-
-  // ── Derived display state ────────────────────────────────────────────────
-  const isBusy = phase === "kickoff" || phase === "polling";
-  const formattedResult =
-    typeof result === "string" ? result : result != null ? JSON.stringify(result, null, 2) : null;
+  const isBusy = phase === "running";
 
   return (
     <div
@@ -141,10 +201,10 @@ export default function AgentsPage() {
           </div>
           <div>
             <h1 className="font-headline text-xl font-bold text-white">
-              CrewAI Agent Console
+              Native Design Agents
             </h1>
             <p className="font-mono text-[11px] text-on-surface-variant/50">
-              Admin · Internal use only
+              Admin · Vercel AI SDK · 6-stage pipeline
             </p>
           </div>
         </div>
@@ -159,7 +219,7 @@ export default function AgentsPage() {
           }}
         >
           <label className="mb-2 block font-mono text-[11px] uppercase tracking-widest text-on-surface-variant/60">
-            Prompt
+            Brief
           </label>
           <textarea
             value={prompt}
@@ -168,7 +228,7 @@ export default function AgentsPage() {
               if (e.key === "Enter" && e.metaKey) handleRun();
             }}
             disabled={isBusy}
-            placeholder="Enter instructions for the CrewAI agents…"
+            placeholder="Describe the feature or initiative you want the agents to design…"
             rows={6}
             className="w-full resize-none rounded-lg bg-transparent text-sm text-white/90 placeholder:text-on-surface-variant/30 outline-none font-body disabled:opacity-50"
             style={{
@@ -192,15 +252,10 @@ export default function AgentsPage() {
             color: "#0e0e10",
           }}
         >
-          {phase === "kickoff" ? (
+          {isBusy ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
-              Kicking off…
-            </>
-          ) : phase === "polling" ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Processing…
+              Running pipeline…
             </>
           ) : (
             <>
@@ -210,116 +265,95 @@ export default function AgentsPage() {
           )}
         </button>
 
-        {/* Status indicator — shown while polling */}
-        {phase === "polling" && (
-          <div
-            className="mt-6 rounded-xl p-4 flex items-center gap-3"
-            style={{
-              background: "rgba(25,25,28,0.80)",
-              border: "1px solid rgba(0,230,230,0.30)",
-              backdropFilter: "blur(12px)",
-            }}
-          >
-            <Loader2 className="h-4 w-4 animate-spin" style={{ color: "#00e6e6" }} />
-            <div className="flex-1">
-              <div className="font-mono text-xs text-white/90">
-                {currentState ? `Processing · ${currentState}` : "Processing…"}
-              </div>
-              <div className="font-mono text-[10px] text-on-surface-variant/50 mt-0.5">
-                {kickoffId && <>kickoff {kickoffId.slice(0, 8)}… · </>}
-                poll {attempts}/{POLL_MAX_ATTEMPTS}
-              </div>
-            </div>
+        {/* Stage panels */}
+        {stages.length > 0 && (
+          <div className="mt-8 space-y-4">
+            {stages.map((stage, idx) => {
+              const state = states[stage.key] ?? {
+                status: "pending" as const,
+                text: "",
+              };
+              const isCurrent = currentStage === stage.key;
+              const borderColor =
+                state.status === "errored"
+                  ? "rgba(239,68,68,0.45)"
+                  : state.status === "complete"
+                    ? "rgba(0,230,230,0.35)"
+                    : isCurrent
+                      ? "rgba(156,66,244,0.45)"
+                      : "rgba(72,71,74,0.50)";
+
+              return (
+                <div
+                  key={stage.key}
+                  className="rounded-xl p-5"
+                  style={{
+                    background: "rgba(25,25,28,0.80)",
+                    border: `1px solid ${borderColor}`,
+                    backdropFilter: "blur(12px)",
+                  }}
+                >
+                  <div className="mb-3 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant/40">
+                        Stage {idx + 1} / {stages.length}
+                      </span>
+                      <span className="font-headline text-sm font-semibold text-white">
+                        {stage.title}
+                      </span>
+                    </div>
+                    <StageBadge status={state.status} />
+                  </div>
+
+                  {state.text ? (
+                    <pre
+                      className="overflow-x-auto whitespace-pre-wrap font-mono text-xs leading-relaxed"
+                      style={{
+                        color:
+                          state.status === "errored" ? "#fca5a5" : "#00e6e6",
+                      }}
+                    >
+                      {state.text}
+                      {state.status === "streaming" && (
+                        <span className="animate-pulse text-white/60">▌</span>
+                      )}
+                    </pre>
+                  ) : (
+                    <p className="font-mono text-[10px] text-on-surface-variant/30">
+                      {state.status === "pending"
+                        ? "Queued…"
+                        : "Waiting for first token…"}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
 
-        {/* Success — final result */}
-        {phase === "success" && formattedResult && (
-          <div
-            className="mt-6 rounded-xl p-5"
-            style={{
-              background: "rgba(25,25,28,0.80)",
-              border: "1px solid rgba(72,71,74,0.50)",
-              backdropFilter: "blur(12px)",
-            }}
-          >
-            <div className="mb-3 flex items-center gap-2">
-              <CheckCircle2 className="h-3.5 w-3.5" style={{ color: "#00e6e6" }} />
-              <span className="font-mono text-[11px] uppercase tracking-widest text-on-surface-variant/50">
-                Final Output
-              </span>
-            </div>
-            <pre
-              className="overflow-x-auto whitespace-pre-wrap font-mono text-xs leading-relaxed"
-              style={{ color: "#00e6e6" }}
-            >
-              {formattedResult}
-            </pre>
-          </div>
-        )}
-
-        {/* Failure — error surface (summary + reason + trace + raw payload) */}
+        {/* Failure panel */}
         {phase === "failed" && errorMsg && (
           <div
-            className="mt-6 rounded-xl p-5 space-y-4"
+            className="mt-6 rounded-xl p-5"
             style={{
               background: "rgba(25,25,28,0.80)",
               border: "1px solid rgba(239,68,68,0.40)",
               backdropFilter: "blur(12px)",
             }}
           >
-            <div className="flex items-center gap-2">
+            <div className="mb-3 flex items-center gap-2">
               <XCircle className="h-3.5 w-3.5 text-red-400" />
               <span className="font-mono text-[11px] uppercase tracking-widest text-red-400/80">
                 Error
               </span>
             </div>
-
-            <div>
-              <div className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant/40 mb-1">
-                Summary
-              </div>
-              <pre className="overflow-x-auto whitespace-pre-wrap font-mono text-xs leading-relaxed text-red-300/90">
-                {errorMsg}
-              </pre>
-            </div>
-
-            {failureReason && failureReason !== errorMsg && (
-              <div>
-                <div className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant/40 mb-1">
-                  Failure reason
-                </div>
-                <pre className="overflow-x-auto whitespace-pre-wrap font-mono text-xs leading-relaxed text-red-300/90">
-                  {failureReason}
-                </pre>
-              </div>
-            )}
-
-            {trace && (
-              <div>
-                <div className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant/40 mb-1">
-                  Trace
-                </div>
-                <pre className="overflow-x-auto whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-red-300/80">
-                  {trace}
-                </pre>
-              </div>
-            )}
-
-            {rawStatus != null && (
-              <details className="group">
-                <summary className="cursor-pointer font-mono text-[10px] uppercase tracking-widest text-on-surface-variant/50 hover:text-on-surface-variant/80">
-                  Raw upstream payload
-                </summary>
-                <pre className="mt-2 overflow-x-auto whitespace-pre-wrap font-mono text-[11px] leading-relaxed text-on-surface-variant/70">
-                  {JSON.stringify(rawStatus, null, 2)}
-                </pre>
-              </details>
-            )}
+            <pre className="overflow-x-auto whitespace-pre-wrap font-mono text-xs leading-relaxed text-red-300/90">
+              {errorMsg}
+            </pre>
           </div>
         )}
 
-        {/* Terminal footnote — kept for continuity with the original aesthetic */}
+        {/* Idle footnote */}
         {phase === "idle" && (
           <div className="mt-8 flex items-center gap-2 opacity-40">
             <Terminal className="h-3 w-3 text-cyan-400" />
@@ -331,4 +365,38 @@ export default function AgentsPage() {
       </div>
     </div>
   );
+}
+
+// ─── Small badge component ──────────────────────────────────────────────────
+
+function StageBadge({ status }: { status: StageState["status"] }) {
+  switch (status) {
+    case "complete":
+      return (
+        <span className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-widest text-cyan-300/80">
+          <CheckCircle2 className="h-3 w-3" />
+          Done
+        </span>
+      );
+    case "streaming":
+      return (
+        <span className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-widest text-violet-300/80">
+          <Loader2 className="h-3 w-3 animate-spin" />
+          Streaming
+        </span>
+      );
+    case "errored":
+      return (
+        <span className="flex items-center gap-1 font-mono text-[10px] uppercase tracking-widest text-red-300/80">
+          <XCircle className="h-3 w-3" />
+          Error
+        </span>
+      );
+    default:
+      return (
+        <span className="font-mono text-[10px] uppercase tracking-widest text-on-surface-variant/40">
+          Pending
+        </span>
+      );
+  }
 }
