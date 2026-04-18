@@ -15,6 +15,7 @@ reviews outputs, and may re-delegate if quality is insufficient.
 from __future__ import annotations
 
 import os
+import traceback
 from pathlib import Path
 
 from crewai import LLM, Agent, Crew, Process, Task
@@ -46,23 +47,60 @@ _OPENAI_KEY    = (os.getenv("OPENAI_API_KEY")    or "").strip() or None
 if _ANTHROPIC_KEY: os.environ["ANTHROPIC_API_KEY"] = _ANTHROPIC_KEY
 if _OPENAI_KEY:    os.environ["OPENAI_API_KEY"]    = _OPENAI_KEY
 
-# Visible at the top of every crew run — if a key is missing you see it before
-# the first task is ever dispatched, instead of decoding it from a trace.
-print(f"[vibe_crew] ANTHROPIC_API_KEY present: {bool(_ANTHROPIC_KEY)}")
-print(f"[vibe_crew] OPENAI_API_KEY    present: {bool(_OPENAI_KEY)}")
+# Visible at the top of every crew run. We print *length only* (never the
+# value) so CrewAI Cloud logs are safe to share, but we still get enough
+# signal to tell "env var missing" from "env var present but malformed".
+print(
+    f"[vibe_crew] ANTHROPIC_API_KEY present={bool(_ANTHROPIC_KEY)} "
+    f"length={len(os.environ.get('ANTHROPIC_API_KEY', ''))} "
+    f"stripped_length={len((_ANTHROPIC_KEY or ''))}",
+    flush=True,
+)
+print(
+    f"[vibe_crew] OPENAI_API_KEY    present={bool(_OPENAI_KEY)} "
+    f"length={len(os.environ.get('OPENAI_API_KEY', ''))} "
+    f"stripped_length={len((_OPENAI_KEY or ''))}",
+    flush=True,
+)
 if not _ANTHROPIC_KEY or not _OPENAI_KEY:
     print(
         "[vibe_crew] WARNING: one or more required API keys are missing — the "
         "crew will fail on the first task. Set ANTHROPIC_API_KEY and "
         "OPENAI_API_KEY under CrewAI Cloud → Environment Variables, then "
         "redeploy.",
+        flush=True,
     )
 
 # Explicit LLM objects — one per provider. CrewAI's Agent constructor accepts
 # an LLM instance via the `llm=` kwarg, and that kwarg overrides whatever
 # `llm:` string lives in the YAML config dict we also pass in.
-CEO_LLM = LLM(model=CEO_MODEL, api_key=_ANTHROPIC_KEY)
-WORKER_LLM = LLM(model=WORKER_MODEL, api_key=_OPENAI_KEY)
+#
+# We wrap each constructor in a try/except that prints the full traceback
+# to stdout before re-raising, so the CrewAI Cloud deploy log captures the
+# WHY of an init failure (missing key / bad model name / litellm import
+# error / etc) — not just the final "ANTHROPIC_API_KEY is required" line
+# several frames deep in the stack.
+def _init_llm(model: str, api_key: str | None, label: str) -> LLM:
+    try:
+        llm = LLM(model=model, api_key=api_key)
+        print(
+            f"[vibe_crew] {label} initialised ok (model={model}, "
+            f"api_key_bound={bool(api_key)})",
+            flush=True,
+        )
+        return llm
+    except Exception as exc:  # surface the real reason, then re-raise
+        print(
+            f"[vibe_crew] ERROR initialising {label} "
+            f"(model={model}, api_key_bound={bool(api_key)}): "
+            f"{type(exc).__name__}: {exc}",
+            flush=True,
+        )
+        traceback.print_exc()
+        raise
+
+CEO_LLM    = _init_llm(CEO_MODEL,    _ANTHROPIC_KEY, "CEO_LLM")
+WORKER_LLM = _init_llm(WORKER_MODEL, _OPENAI_KEY,    "WORKER_LLM")
 
 # ─── Config paths (absolute so resolution is stable across CWDs) ─────────────
 #

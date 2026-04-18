@@ -27,8 +27,27 @@ what the CrewAI Cloud deployer inspects and what ships inside the wheel.
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
+
+# ── Earliest-possible env diagnostics ────────────────────────────────────────
+#
+# This runs BEFORE the authored crew package is imported, so the very first
+# lines in the CrewAI Cloud deploy log show us whether the required keys
+# actually reached the Python runtime. We deliberately print only the
+# length — never the value — so this is safe to leave in production.
+#
+# If `length=0` here, no amount of deeper wiring can save us: the secret
+# never made it from the CrewAI Cloud dashboard into the worker process.
+# That is a platform-config problem, not a code problem.
+for _k in ("ANTHROPIC_API_KEY", "OPENAI_API_KEY"):
+    _v = os.environ.get(_k, "")
+    print(
+        f"[vibe_crew.shim] {_k}: present={bool(_v)} "
+        f"length={len(_v)} stripped_length={len(_v.strip())}",
+        flush=True,
+    )
 
 # ── Make the authored crew package importable ────────────────────────────────
 _HERE       = Path(__file__).resolve()
