@@ -313,26 +313,87 @@ export async function* runPipeline(
     if (signal?.aborted) return;
 
     yield { type: "stage_start", key: stage.key, title: stage.title };
+    console.log(`[design-agents] stage_start: ${stage.key}`);
 
     try {
+      // We iterate `fullStream` (not `textStream`) so provider errors arrive
+      // as first-class `{ type: "error" }` events. Iterating `textStream`
+      // alone silently swallows auth failures, rate limits, and unknown
+      // model IDs — the stream just yields zero deltas and completes, which
+      // is exactly the "all stages DONE but empty" bug we saw.
       const result = streamText({
         model: stage.model,
         system: stage.persona.systemPrompt,
         prompt: stage.buildPrompt({ topic, outputs }),
         abortSignal: signal,
+        onError: ({ error }) => {
+          // Surface provider errors into the dev-server terminal so they
+          // aren't invisible. The caught copy below is what reaches the UI.
+          console.error(`[design-agents] stream error in ${stage.key}:`, error);
+        },
       });
 
       let collected = "";
-      for await (const delta of result.textStream) {
+      let sawError: unknown = null;
+
+      for await (const part of result.fullStream) {
         if (signal?.aborted) return;
-        collected += delta;
-        yield { type: "stage_delta", key: stage.key, delta };
+
+        switch (part.type) {
+          case "text-delta": {
+            // v6 name: `text`, not `textDelta`. A silent schema mismatch
+            // here was what hid the bug in the first cut — iterate the
+            // types file (node_modules/ai/dist/index.d.ts) if this ever
+            // drifts again.
+            if (part.text) {
+              collected += part.text;
+              yield { type: "stage_delta", key: stage.key, delta: part.text };
+            }
+            break;
+          }
+          case "error": {
+            sawError = part.error;
+            // Break out of the for-await loop by throwing — caught below.
+            throw part.error instanceof Error
+              ? part.error
+              : new Error(
+                  typeof part.error === "string"
+                    ? part.error
+                    : JSON.stringify(part.error),
+                );
+          }
+          // Every other part type (start, finish-step, text-start,
+          // text-end, etc.) is noise for our purposes — ignore.
+          default:
+            break;
+        }
+      }
+
+      // Belt-and-braces: if we made it through the stream without any
+      // `text-delta` events AND without an explicit error, something
+      // still went wrong upstream. Refuse to silently record an empty
+      // stage and move on — surface it so the UI can display the failure.
+      if (!collected.trim()) {
+        throw new Error(
+          "Stage produced no text. This usually means the provider call " +
+            "failed silently — check ANTHROPIC_API_KEY and the model ID, " +
+            "and watch the dev-server terminal for an [design-agents] " +
+            "stream error line.",
+        );
       }
 
       outputs[stage.key] = collected;
+      console.log(
+        `[design-agents] stage_complete: ${stage.key} (${collected.length} chars)`,
+      );
       yield { type: "stage_complete", key: stage.key, text: collected };
+
+      // Unused but kept readable — forces the compiler to retain the
+      // narrowed type above.
+      void sawError;
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`[design-agents] stage failed (${stage.key}):`, err);
       yield { type: "error", key: stage.key, message };
       return;
     }
