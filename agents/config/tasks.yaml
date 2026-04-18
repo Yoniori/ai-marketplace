@@ -8,7 +8,9 @@
 #                                                └► growth_plan ─► launch_copy
 #
 # The CEO (manager_agent) reviews every handoff and can re-delegate.
-# The `{brief}` placeholder is populated from crew.kickoff(inputs={"brief": ...}).
+# The `{topic}` placeholder is populated from crew.kickoff(inputs={"topic": ...}).
+# It is the single entry-point input — whatever the founder types in the
+# admin console's prompt box arrives here verbatim.
 # ────────────────────────────────────────────────────────────────────────────
 
 brand_direction:
@@ -16,7 +18,7 @@ brand_direction:
     The founder has submitted the following brief:
 
     ----- BRIEF -----
-    {brief}
+    {topic}
     ----- END BRIEF -----
 
     Define the brand and visual direction for this initiative in under 300
@@ -79,8 +81,8 @@ ui_specification:
       - The spec ships into a Next.js 14 App Router codebase using Tailwind
         and Radix UI. Do not propose patterns that fight the stack.
       - Design every state, not just the happy path.
-      - No inline `style={{ … }}` attributes unless a value genuinely cannot
-        be expressed as Tailwind.
+      - No inline JSX style objects unless a value genuinely cannot be
+        expressed as Tailwind.
       - No arbitrary Tailwind values (`[calc(...)]`, `[17px]`) without a
         one-line reason in a trailing comment.
   expected_output: >

@@ -68,7 +68,10 @@ function readCreds(): { base: string; token: string } | { error: string } {
 /**
  * Kick off a crew run. Returns an executionId (the CrewAI kickoff_id) that
  * can be polled with `getAgentStatus`. The crew's tasks.yaml template uses
- * `{brief}` — do not rename this key without updating both tasks.yaml copies.
+ * `{topic}` as its single entry-point input — whatever the founder types
+ * in the admin prompt box is forwarded verbatim under that key. Do not
+ * rename without updating src/vibe_crew/config/tasks.yaml AND
+ * agents/config/tasks.yaml in lockstep.
  */
 export async function runAgents(prompt: string): Promise<KickoffResult> {
   const creds = readCreds();
@@ -83,7 +86,7 @@ export async function runAgents(prompt: string): Promise<KickoffResult> {
         "Content-Type": "application/json",
         Authorization: `Bearer ${creds.token}`,
       },
-      body: JSON.stringify({ inputs: { brief: prompt } }),
+      body: JSON.stringify({ inputs: { topic: prompt } }),
       cache: "no-store",
     });
 
