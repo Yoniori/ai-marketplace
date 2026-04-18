@@ -31,7 +31,10 @@ import {
 // Single provider by design — one key, one surface area, one thing to debug.
 // If later we want cost-sensitive routing, swap `CLAUDE` for a per-stage
 // `LanguageModel` on the stage definition.
-const CLAUDE: LanguageModel = anthropic("claude-3-5-sonnet-20241022");
+// Use the current Sonnet — `claude-3-5-sonnet-20241022` has been retired on
+// the Anthropic API and now returns a 404 `not_found_error`, which bubbled
+// up to the UI as an opaque stage failure.
+const CLAUDE: LanguageModel = anthropic("claude-sonnet-4-5");
 
 // ─── Stage definitions ──────────────────────────────────────────────────────
 

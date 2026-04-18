@@ -1,13 +1,26 @@
-import { type NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
 /**
  * Root Next.js middleware.
  * Runs on every matched request to refresh the Supabase session
  * and enforce auth guards on protected routes.
+ *
+ * We wrap `updateSession` in a try/catch because a hanging or unreachable
+ * Supabase host (DNS failure, project paused, network blip) would otherwise
+ * throw out of middleware and cause Next.js to serve the dev-mode
+ * "missing required error components, refreshing…" stub HTML for every
+ * page load — which LOOKS like the app is crashing but is really an
+ * upstream outage. Failing open (pass-through) keeps the rest of the app
+ * usable; the page's own server-side auth checks still enforce access.
  */
 export async function middleware(request: NextRequest) {
-  return await updateSession(request);
+  try {
+    return await updateSession(request);
+  } catch (err) {
+    console.error("[middleware] updateSession failed — falling through:", err);
+    return NextResponse.next({ request });
+  }
 }
 
 export const config = {
